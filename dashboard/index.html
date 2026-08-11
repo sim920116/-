@@ -205,13 +205,6 @@
     white-space: nowrap;
   }
 
-  .vbar-chart { display: flex; align-items: flex-end; gap: 10px; height: 176px; padding-top: 20px; position: relative; }
-  .vbar-chart .gridline { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--border); font-size: 10px; }
-  .vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
-  .vbar-fill { width: 60%; max-width: 34px; background: var(--series-blue); border-radius: 4px 4px 0 0; position: relative; }
-  .vbar-val { font-size: 10.5px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; }
-  .vbar-tick { font-size: 10.5px; color: var(--muted); margin-top: 6px; }
-
   .stack-bar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
   .stack-seg { height: 100%; position: relative; }
   .stack-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
@@ -346,33 +339,6 @@
   </div>
 
   <div class="chart-grid">
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <p class="card-title">월별 입식두수 추이</p>
-          <p class="card-caption">형제파주농장 · 전입일 기준 월 합계</p>
-        </div>
-        <button class="toggle-table" data-target="monthChartTable">표로 보기</button>
-      </div>
-      <div id="monthChart"></div>
-      <div id="monthChartTable" style="display:none"></div>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <p class="card-title">배치별 폐사현황</p>
-          <p class="card-caption">전입일순 · 전입두수 대비 폐사율</p>
-        </div>
-        <button class="toggle-table" data-target="mortalityChartTable">표로 보기</button>
-      </div>
-      <div class="stack-legend" style="margin:0 0 10px;">
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>양호 &lt;4%</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--warning)"></span>주의 4–7%</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>위험 ≥7%</div>
-      </div>
-      <div id="mortalityChart"></div>
-      <div id="mortalityChartTable" style="display:none"></div>
-    </div>
     <div class="card wide">
       <div class="card-head">
         <div>
@@ -486,8 +452,6 @@ const RECORDS = [{"farm": "형제파주", "group": "형제파주-형제파주-20
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
 const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
-const monthLabel = m => (parseInt(m.slice(5,7),10)) + '월';
-const dateLabel = d => d.slice(5,7) + '/' + d.slice(8,10);
 
 function statusOf(rate) {
   if (rate === null || rate === undefined || Number.isNaN(rate)) return null;
@@ -560,79 +524,11 @@ function positionTooltip(evt) {
 }
 function hideTooltip() { tooltipEl.classList.remove('show'); }
 
-// ---------------- Batch mortality bar chart ----------------
+// ---------------- Mortality status helper (shared by age chart) ----------------
 function mortalityStatus(rate) {
   if (rate < 4) return 'good';
   if (rate < 7) return 'warning';
   return 'critical';
-}
-
-function renderMortalityChart() {
-  const withRate = RECORDS.map(r => ({ ...r, mortalityRate: r.deaths / r.entryCount * 100 }));
-  const top = withRate.slice().sort((a, b) => a.entryDate.localeCompare(b.entryDate));
-  const max = Math.max(...top.map(r => r.deaths));
-  const el = document.getElementById('mortalityChart');
-  el.innerHTML = top.map(r => {
-    const pct = Math.max(r.deaths / max * 100, 1.5);
-    const st = mortalityStatus(r.mortalityRate);
-    return `<div class="bar-row" data-group="${r.group}">
-      <div class="bar-label" title="${r.group}">${dateLabel(r.entryDate)} 입식</div>
-      <div class="bar-track">
-        <div class="bar-fill st-${st}" style="width:${pct}%"></div>
-        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(r.deaths)}두 (${fmt1(r.mortalityRate)}%)</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  el.querySelectorAll('.bar-row').forEach(row => {
-    const r = top.find(x => x.group === row.dataset.group);
-    row.addEventListener('mousemove', e => showTooltip(e, `
-      <div><b>${r.group}</b></div>
-      <div class="t-row"><span>전입일</span><span>${r.entryDate}</span></div>
-      <div class="t-row"><span>전입두수</span><span>${fmt(r.entryCount)}두</span></div>
-      <div class="t-row"><span>폐사두수</span><span>${fmt(r.deaths)}두</span></div>
-      <div class="t-row"><span>폐사율</span><span>${fmt1(r.mortalityRate)}%</span></div>
-      <div class="t-row"><span>현재고</span><span>${fmt(r.currentStock)}두</span></div>
-    `));
-    row.addEventListener('mouseleave', hideTooltip);
-  });
-
-  document.getElementById('mortalityChartTable').innerHTML = `
-    <table class="mini-table"><thead><tr><th>전입일</th><th>폐사두수</th><th>폐사율</th></tr></thead>
-    <tbody>${top.map(r => `<tr><td>${r.entryDate}</td><td class="mono">${fmt(r.deaths)}두</td><td class="mono">${fmt1(r.mortalityRate)}%</td></tr>`).join('')}</tbody></table>`;
-}
-
-// ---------------- Monthly vertical bar chart ----------------
-function renderMonthChart() {
-  const byMonth = {};
-  RECORDS.forEach(r => {
-    const m = r.entryDate.slice(0, 7);
-    byMonth[m] = (byMonth[m] || 0) + r.entryCount;
-  });
-  const MONTHLY = Object.keys(byMonth).sort().map(month => ({ month, entryCount: byMonth[month] }));
-  const max = Math.max(...MONTHLY.map(m => m.entryCount));
-  const el = document.getElementById('monthChart');
-  el.innerHTML = `<div class="vbar-chart">` + MONTHLY.map(m => {
-    const pct = Math.max(m.entryCount / max * 100, 2);
-    return `<div class="vbar-col" data-month="${m.month}">
-      <div class="vbar-val mono">${fmt(m.entryCount)}</div>
-      <div class="vbar-fill" style="height:${pct}%"></div>
-      <div class="vbar-tick">${monthLabel(m.month)}</div>
-    </div>`;
-  }).join('') + `</div>`;
-
-  el.querySelectorAll('.vbar-col').forEach(col => {
-    const m = MONTHLY.find(x => x.month === col.dataset.month);
-    col.addEventListener('mousemove', e => showTooltip(e, `
-      <div><b>${m.month}</b></div>
-      <div class="t-row"><span>입식두수</span><span>${fmt(m.entryCount)}두</span></div>
-    `));
-    col.addEventListener('mouseleave', hideTooltip);
-  });
-
-  document.getElementById('monthChartTable').innerHTML = `
-    <table class="mini-table"><thead><tr><th>월</th><th>입식두수</th></tr></thead>
-    <tbody>${MONTHLY.map(m => `<tr><td>${m.month}</td><td class="mono">${fmt(m.entryCount)}두</td></tr>`).join('')}</tbody></table>`;
 }
 
 // ---------------- Outcome stacked bar ----------------
@@ -900,8 +796,6 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
   });
 });
 
-renderMortalityChart();
-renderMonthChart();
 renderStackChart();
 const AGE_BUCKETS = buildAgeBuckets();
 renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
