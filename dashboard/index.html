@@ -1,0 +1,654 @@
+<title>심유선 사육현황 대시보드</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #eeece1;
+    --surface: #fbfaf5;
+    --surface-2: #f3f1e6;
+    --surface-inset: #e8e5d7;
+    --ink: #1a1d16;
+    --ink-soft: #4d5045;
+    --muted: #83816f;
+    --border: rgba(26,29,22,0.12);
+    --border-strong: rgba(26,29,22,0.22);
+    --accent: #2f4858;
+    --accent-strong: #1c2f3a;
+    --accent-soft: #dbe4e7;
+    --accent-ink: #ffffff;
+    --shadow: 0 1px 2px rgba(26,29,22,0.06), 0 8px 24px -12px rgba(26,29,22,0.18);
+
+    --series-blue: #2a78d6;
+    --series-blue-soft: #cde2fb;
+    --good: #0ca30c;
+    --good-soft: #dcf3dc;
+    --warning: #b7790a;
+    --warning-soft: #fbe8bf;
+    --critical: #d03b3b;
+    --critical-soft: #fadbdb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #14161a;
+      --surface: #1c1f22;
+      --surface-2: #22262a;
+      --surface-inset: #191c1f;
+      --ink: #f1efe4;
+      --ink-soft: #c7c4b3;
+      --muted: #93968f;
+      --border: rgba(241,239,228,0.12);
+      --border-strong: rgba(241,239,228,0.22);
+      --accent: #7fa8bb;
+      --accent-strong: #a9c7d4;
+      --accent-soft: #253840;
+      --accent-ink: #10181b;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+
+      --series-blue: #3987e5;
+      --series-blue-soft: #1c3350;
+      --good: #2fbf3f;
+      --good-soft: #163a1a;
+      --warning: #e0ab2e;
+      --warning-soft: #3d3110;
+      --critical: #e66767;
+      --critical-soft: #3d1c1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #14161a;
+    --surface: #1c1f22;
+    --surface-2: #22262a;
+    --surface-inset: #191c1f;
+    --ink: #f1efe4;
+    --ink-soft: #c7c4b3;
+    --muted: #93968f;
+    --border: rgba(241,239,228,0.12);
+    --border-strong: rgba(241,239,228,0.22);
+    --accent: #7fa8bb;
+    --accent-strong: #a9c7d4;
+    --accent-soft: #253840;
+    --accent-ink: #10181b;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+
+    --series-blue: #3987e5;
+    --series-blue-soft: #1c3350;
+    --good: #2fbf3f;
+    --good-soft: #163a1a;
+    --warning: #e0ab2e;
+    --warning-soft: #3d3110;
+    --critical: #e66767;
+    --critical-soft: #3d1c1c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dash { max-width: 1220px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  /* ---------- Header ---------- */
+  .head {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 18px; margin-bottom: 22px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .head-eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 6px;
+  }
+  .head h1 {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.01em; margin: 0;
+    text-wrap: balance;
+  }
+  .head-meta { text-align: right; color: var(--muted); font-size: 12.5px; }
+  .head-meta .range { color: var(--ink-soft); font-weight: 600; }
+
+  /* ---------- KPI row ---------- */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 14px 12px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 4px;
+    min-width: 0;
+  }
+  .kpi-label { font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: 0.01em; }
+  .kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+  .kpi-value .unit { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-left: 2px; }
+  .kpi-sub { font-size: 11.5px; color: var(--muted); }
+  .kpi-sub.status-good { color: var(--good); font-weight: 700; }
+  .kpi-sub.status-warning { color: var(--warning); font-weight: 700; }
+  .kpi-sub.status-critical { color: var(--critical); font-weight: 700; }
+
+  /* ---------- Filters ---------- */
+  .filters {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 20px;
+  }
+  .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .filter-label { font-size: 11.5px; color: var(--muted); font-weight: 700; margin-right: 2px; }
+  .chip {
+    appearance: none; border: 1px solid var(--border-strong); background: var(--surface);
+    color: var(--ink-soft); font-size: 12.5px; font-weight: 600; padding: 5px 11px;
+    border-radius: 999px; cursor: pointer; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .chip:focus-visible, .search-input:focus-visible, th button:focus-visible, .toggle-table:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .search-input {
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink);
+    font-size: 12.5px; padding: 6px 10px; border-radius: 8px; font-family: inherit;
+    min-width: 190px;
+  }
+  .filters-spacer { flex: 1; }
+  .result-count { font-size: 12px; color: var(--muted); }
+
+  /* ---------- Charts ---------- */
+  .chart-grid {
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin-bottom: 20px;
+  }
+  .chart-grid .wide { grid-column: 1 / -1; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px 14px; box-shadow: var(--shadow);
+  }
+  .card-title { font-size: 14px; font-weight: 800; margin: 0 0 2px; }
+  .card-caption { font-size: 11.5px; color: var(--muted); margin: 0 0 12px; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .toggle-table {
+    background: none; border: none; color: var(--accent); font-size: 11.5px; font-weight: 700;
+    cursor: pointer; padding: 2px 0; font-family: inherit; text-decoration: underline; text-underline-offset: 2px;
+    white-space: nowrap;
+  }
+
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-label {
+    width: 108px; flex: 0 0 108px; font-size: 11.5px; color: var(--ink-soft);
+    text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bar-track { flex: 1; position: relative; height: 20px; background: var(--surface-inset); border-radius: 4px; overflow: visible; }
+  .bar-fill {
+    position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px;
+    background: var(--series-blue); min-width: 3px;
+  }
+  .bar-fill.st-good { background: var(--good); }
+  .bar-fill.st-warning { background: var(--warning); }
+  .bar-fill.st-critical { background: var(--critical); }
+  .bar-value {
+    position: absolute; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .vbar-chart { display: flex; align-items: flex-end; gap: 10px; height: 176px; padding-top: 20px; position: relative; }
+  .vbar-chart .gridline { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--border); font-size: 10px; }
+  .vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+  .vbar-fill { width: 60%; max-width: 34px; background: var(--series-blue); border-radius: 4px 4px 0 0; position: relative; }
+  .vbar-val { font-size: 10.5px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; }
+  .vbar-tick { font-size: 10.5px; color: var(--muted); margin-top: 6px; }
+
+  .stack-bar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .stack-seg { height: 100%; position: relative; }
+  .stack-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--accent-strong); color: var(--accent-ink);
+    font-size: 11.5px; line-height: 1.5; padding: 8px 10px; border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25); max-width: 240px;
+    opacity: 0; transform: translateY(2px); transition: opacity .1s ease, transform .1s ease;
+  }
+  .tooltip.show { opacity: 1; transform: translateY(0); }
+  .tooltip b { font-weight: 800; }
+  .tooltip .t-row { display: flex; justify-content: space-between; gap: 10px; }
+
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+  .mini-table th, .mini-table td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+  .mini-table th:first-child, .mini-table td:first-child { text-align: left; }
+
+  /* ---------- Table ---------- */
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-card-head { padding: 16px 18px 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .table-scroll { overflow-x: auto; }
+  table.ledger { width: 100%; border-collapse: collapse; min-width: 980px; }
+  table.ledger thead th {
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
+    text-align: right; font-size: 11px; font-weight: 700; color: var(--muted);
+    padding: 9px 10px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+  }
+  table.ledger thead th:nth-child(1),
+  table.ledger thead th:nth-child(2),
+  table.ledger thead th:nth-child(3) { text-align: left; }
+  table.ledger th button {
+    background: none; border: none; font: inherit; color: inherit; cursor: pointer;
+    padding: 0; display: inline-flex; align-items: center; gap: 3px;
+  }
+  table.ledger th .sort-arrow { font-size: 9px; opacity: 0.45; }
+  table.ledger th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+  table.ledger tbody td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12.5px;
+    text-align: right; white-space: nowrap;
+  }
+  table.ledger tbody td:nth-child(1),
+  table.ledger tbody td:nth-child(2),
+  table.ledger tbody td:nth-child(3) { text-align: left; }
+  table.ledger tbody tr:hover td { background: var(--surface-2); }
+  table.ledger tbody tr:nth-child(even) td { background: var(--surface-inset); }
+  table.ledger tbody tr:nth-child(even):hover td { background: var(--surface-2); }
+  .farm-cell { font-weight: 700; }
+  .group-cell { color: var(--muted); font-size: 11.5px; }
+  .cat-chip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-strong);
+  }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 12px;
+    justify-content: flex-end;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .status-dot.st-good { background: var(--good); }
+  .status-dot.st-warning { background: var(--warning); }
+  .status-dot.st-critical { background: var(--critical); }
+  .status-chip.st-good { color: var(--good); }
+  .status-chip.st-warning { color: var(--warning); }
+  .status-chip.st-critical { color: var(--critical); }
+  .empty-row td { text-align: center; color: var(--muted); padding: 28px; font-size: 13px; }
+
+  .footer { margin-top: 22px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 11.5px; color: var(--muted); }
+
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="dash">
+  <div class="head">
+    <div>
+      <p class="head-eyebrow">양돈 사육 운영 현황</p>
+      <h1>심유선 사육현황 대시보드</h1>
+    </div>
+    <div class="head-meta">
+      <div>데이터 기준 <span class="range" id="dateRange">-</span></div>
+      <div>총 <span class="range" id="farmCountMeta">-</span>개 농장 · <span class="range" id="groupCountMeta">-</span>개 배치</div>
+    </div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">구분</span>
+      <button class="chip active" data-filter="category" data-value="all">전체</button>
+      <button class="chip" data-filter="category" data-value="비육돈">비육돈</button>
+      <button class="chip" data-filter="category" data-value="자돈">자돈</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">육성률</span>
+      <button class="chip active" data-filter="status" data-value="all">전체</button>
+      <button class="chip" data-filter="status" data-value="good">양호 (≥96%)</button>
+      <button class="chip" data-filter="status" data-value="warning">주의 (90–96%)</button>
+      <button class="chip" data-filter="status" data-value="critical">위험 (&lt;90%)</button>
+    </div>
+    <input class="search-input" id="searchInput" type="text" placeholder="농장명 또는 그룹명 검색" />
+    <div class="filters-spacer"></div>
+    <div class="result-count" id="resultCount"></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">농장별 현재 사육두수</p>
+          <p class="card-caption">상위 12개 농장 · 현재고 기준</p>
+        </div>
+        <button class="toggle-table" data-target="farmChartTable">표로 보기</button>
+      </div>
+      <div class="stack-legend" style="margin:0 0 10px;">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>양호 ≥96%</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--warning)"></span>주의 90–96%</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>위험 &lt;90%</div>
+      </div>
+      <div id="farmChart"></div>
+      <div id="farmChartTable" style="display:none"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">월별 입식두수 추이</p>
+          <p class="card-caption">2026년 전입일 기준 합계</p>
+        </div>
+        <button class="toggle-table" data-target="monthChartTable">표로 보기</button>
+      </div>
+      <div id="monthChart"></div>
+      <div id="monthChartTable" style="display:none"></div>
+    </div>
+    <div class="card wide">
+      <div class="card-head">
+        <div>
+          <p class="card-title">입식두수 결과 구성</p>
+          <p class="card-caption">전체 입식두수 <span class="mono" id="totalEntryLabel">-</span>두의 현재 상태 비중</p>
+        </div>
+      </div>
+      <div id="stackChart" style="margin-top:6px;"></div>
+      <div class="stack-legend" id="stackLegend"></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-card-head">
+      <div>
+        <p class="card-title" style="margin-bottom:0">배치별 상세 현황</p>
+        <p class="card-caption" style="margin-bottom:0">그룹(배치) 단위 원장 · 헤더 클릭 시 정렬</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="ledger" id="ledgerTable">
+        <thead>
+          <tr>
+            <th data-key="farm"><button>농장명 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="group"><button>그룹명 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="category"><button>구분 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="entryDate"><button>전입일 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="entryCount"><button>전입두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="currentAgeDays"><button>현재일령 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="deaths"><button>폐사두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="sold"><button>판매두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="currentStock"><button>현재고 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="survivalRate"><button>육성률 <span class="sort-arrow">▲</span></button></th>
+          </tr>
+        </thead>
+        <tbody id="ledgerBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>출처: 업로드된 사육현황 원본 데이터 (85개 배치 · 30개 농장)</span>
+    <span id="generatedAt"></span>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const RECORDS = [{"farm": "보림창수", "group": "보림창수-보림창수-2026-001", "category": "비육돈", "location": "B011", "entryDate": "2026-02-28", "entryCount": 450, "entryAgeDays": 70.0, "weightPerHead": 36.2, "initialCount": 450, "claim": 0, "currentAgeDays": 234, "deaths": 65, "sold": 379, "currentStock": 6, "survivalRate": 85.6, "breedFarm": "인티-민근농장(정선미)", "pigletFarm": "인티-민근농장(정선미)"}, {"farm": "보림창수", "group": "보림창수-보림창수-2026-002", "category": "비육돈", "location": "B011", "entryDate": "2026-03-12", "entryCount": 350, "entryAgeDays": 70.0, "weightPerHead": 34.9, "initialCount": 350, "claim": 0, "currentAgeDays": 222, "deaths": 41, "sold": 252, "currentStock": 57, "survivalRate": 88.3, "breedFarm": "인티-민근농장(정선미)", "pigletFarm": "인티-민근농장(정선미)"}, {"farm": "진정2", "group": "진정2-진정2-2026-006", "category": "비육돈", "location": "B020", "entryDate": "2026-03-19", "entryCount": 259, "entryAgeDays": 64.0, "weightPerHead": 25.5, "initialCount": 264, "claim": 5, "currentAgeDays": 209, "deaths": 24, "sold": 229, "currentStock": 6, "survivalRate": 90.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "웰빙파주(이만기)", "group": "웰빙파주(이만기)-웰빙파주(이만기)-2026-002", "category": "비육돈", "location": "B140", "entryDate": "2026-03-23", "entryCount": 891, "entryAgeDays": 71.0, "weightPerHead": 26.3, "initialCount": 900, "claim": 9, "currentAgeDays": 212, "deaths": 35, "sold": 505, "currentStock": 351, "survivalRate": 96.1, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "성웅용인", "group": "성웅용인-성웅용인-2026-001", "category": "비육돈", "location": "B012", "entryDate": "2026-03-27", "entryCount": 600, "entryAgeDays": 70.0, "weightPerHead": 29.9, "initialCount": 600, "claim": 0, "currentAgeDays": 207, "deaths": 22, "sold": 545, "currentStock": 33, "survivalRate": 96.3, "breedFarm": "인티-화서농장(이병용)", "pigletFarm": "인티-화서농장(이병용)"}, {"farm": "거성", "group": "거성-거성-2026-001", "category": "비육돈", "location": "B128", "entryDate": "2026-04-01", "entryCount": 800, "entryAgeDays": 74.0, "weightPerHead": 28.3, "initialCount": 810, "claim": 10, "currentAgeDays": 206, "deaths": 22, "sold": 521, "currentStock": 257, "survivalRate": 97.3, "breedFarm": "오계25", "pigletFarm": "오계25"}, {"farm": "보림가산", "group": "보림가산-보림가산-2026-002", "category": "비육돈", "location": "B010", "entryDate": "2026-04-01", "entryCount": 450, "entryAgeDays": 68.0, "weightPerHead": 29.7, "initialCount": 450, "claim": 0, "currentAgeDays": 200, "deaths": 22, "sold": 319, "currentStock": 109, "survivalRate": 95.1, "breedFarm": "인티-민근농장(정선미)", "pigletFarm": "인티-민근농장(정선미)"}, {"farm": "박석3(비육)", "group": "박석3(비육)-박석3(비육)-2026-003", "category": "비육돈", "location": "B103", "entryDate": "2026-04-02", "entryCount": 257, "entryAgeDays": 75.0, "weightPerHead": 26.9, "initialCount": 260, "claim": 3, "currentAgeDays": 206, "deaths": 20, "sold": 24, "currentStock": 213, "survivalRate": 92.2, "breedFarm": "주식회사하이팜", "pigletFarm": "오계25"}, {"farm": "신흥1", "group": "신흥1-신흥1-2026-002", "category": "비육돈", "location": "B107", "entryDate": "2026-04-02", "entryCount": 474, "entryAgeDays": 71.0, "weightPerHead": 27.6, "initialCount": 480, "claim": 6, "currentAgeDays": 202, "deaths": 37, "sold": 349, "currentStock": 88, "survivalRate": 92.2, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "성웅용인", "group": "성웅용인-성웅용인-2026-002", "category": "비육돈", "location": "B012", "entryDate": "2026-04-03", "entryCount": 600, "entryAgeDays": 70.0, "weightPerHead": 24.8, "initialCount": 600, "claim": 0, "currentAgeDays": 200, "deaths": 30, "sold": 434, "currentStock": 136, "survivalRate": 95.0, "breedFarm": "인티-화서농장(이병용)", "pigletFarm": "인티-화서농장(이병용)"}, {"farm": "양동", "group": "양동-양동-2026-001", "category": "비육돈", "location": "B016", "entryDate": "2026-04-04", "entryCount": 610, "entryAgeDays": 70.0, "weightPerHead": 30.9, "initialCount": 610, "claim": 0, "currentAgeDays": 199, "deaths": 23, "sold": 527, "currentStock": 60, "survivalRate": 96.2, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "자연생명", "group": "자연생명-자연생명-2026-002", "category": "비육돈", "location": "B129", "entryDate": "2026-04-07", "entryCount": 505, "entryAgeDays": 70.0, "weightPerHead": 29.9, "initialCount": 513, "claim": 8, "currentAgeDays": 196, "deaths": 22, "sold": 219, "currentStock": 264, "survivalRate": 95.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "한국", "group": "한국-한국-2026-002", "category": "비육돈", "location": "B024", "entryDate": "2026-04-07", "entryCount": 370, "entryAgeDays": 65.0, "weightPerHead": 20.8, "initialCount": 370, "claim": 0, "currentAgeDays": 191, "deaths": 25, "sold": 148, "currentStock": 197, "survivalRate": 93.2, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "박석3(비육)", "group": "박석3(비육)-박석3(비육)-2026-004", "category": "비육돈", "location": "B103", "entryDate": "2026-04-08", "entryCount": 366, "entryAgeDays": 75.0, "weightPerHead": 30.7, "initialCount": 366, "claim": 0, "currentAgeDays": 200, "deaths": 36, "sold": 0, "currentStock": 330, "survivalRate": 90.2, "breedFarm": "박석3(자돈)", "pigletFarm": "박석3(자돈)"}, {"farm": "찬양", "group": "찬양-찬양-2026-001", "category": "비육돈", "location": "B021", "entryDate": "2026-04-11", "entryCount": 485, "entryAgeDays": 67.0, "weightPerHead": 30.2, "initialCount": 500, "claim": 15, "currentAgeDays": 189, "deaths": 23, "sold": 243, "currentStock": 219, "survivalRate": 95.3, "breedFarm": "인티-창신(송영욱)", "pigletFarm": "인티-창신(송영욱)"}, {"farm": "진정2", "group": "진정2-진정2-2026-007", "category": "비육돈", "location": "B020", "entryDate": "2026-04-15", "entryCount": 259, "entryAgeDays": 70.0, "weightPerHead": 30.8, "initialCount": 264, "claim": 5, "currentAgeDays": 188, "deaths": 23, "sold": 5, "currentStock": 231, "survivalRate": 91.1, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "한영", "group": "한영-한영-2026-002", "category": "비육돈", "location": "B025", "entryDate": "2026-04-16", "entryCount": 370, "entryAgeDays": 70.0, "weightPerHead": 31.4, "initialCount": 370, "claim": 0, "currentAgeDays": 187, "deaths": 18, "sold": 206, "currentStock": 146, "survivalRate": 95.1, "breedFarm": "인티-민근농장(정선미)", "pigletFarm": "인티-민근농장(정선미)"}, {"farm": "찬양", "group": "찬양-찬양-2026-002", "category": "비육돈", "location": "B021", "entryDate": "2026-04-18", "entryCount": 390, "entryAgeDays": 74.0, "weightPerHead": 29.5, "initialCount": 400, "claim": 10, "currentAgeDays": 189, "deaths": 19, "sold": 0, "currentStock": 371, "survivalRate": 95.1, "breedFarm": "인티-창신(송영욱)", "pigletFarm": "인티-창신(송영욱)"}, {"farm": "웰빙파주(이만기)", "group": "웰빙파주(이만기)-웰빙파주(이만기)-2026-003", "category": "비육돈", "location": "B140", "entryDate": "2026-04-19", "entryCount": 891, "entryAgeDays": 70.0, "weightPerHead": 27.8, "initialCount": 900, "claim": 9, "currentAgeDays": 184, "deaths": 35, "sold": 0, "currentStock": 856, "survivalRate": 96.1, "breedFarm": "농업회사법인 돈앤돈(주)", "pigletFarm": "농업회사법인 돈앤돈(주)"}, {"farm": "성웅용인", "group": "성웅용인-성웅용인-2026-003", "category": "비육돈", "location": "B012", "entryDate": "2026-04-21", "entryCount": 600, "entryAgeDays": 70.0, "weightPerHead": 27.2, "initialCount": 600, "claim": 0, "currentAgeDays": 182, "deaths": 31, "sold": 0, "currentStock": 569, "survivalRate": 94.8, "breedFarm": "인티-화서농장(이병용)", "pigletFarm": "인티-화서농장(이병용)"}, {"farm": "한국", "group": "한국-한국-2026-003", "category": "비육돈", "location": "B024", "entryDate": "2026-04-21", "entryCount": 370, "entryAgeDays": 70.0, "weightPerHead": 22.5, "initialCount": 370, "claim": 0, "currentAgeDays": 182, "deaths": 25, "sold": 0, "currentStock": 345, "survivalRate": 93.2, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "신흥1", "group": "신흥1-신흥1-2026-003", "category": "비육돈", "location": "B107", "entryDate": "2026-04-22", "entryCount": 459, "entryAgeDays": 70.0, "weightPerHead": 26.5, "initialCount": 480, "claim": 21, "currentAgeDays": 181, "deaths": 29, "sold": 0, "currentStock": 430, "survivalRate": 93.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "거성", "group": "거성-거성-2026-002", "category": "비육돈", "location": "B128", "entryDate": "2026-04-23", "entryCount": 386, "entryAgeDays": 68.0, "weightPerHead": 28.4, "initialCount": 390, "claim": 4, "currentAgeDays": 178, "deaths": 12, "sold": 79, "currentStock": 295, "survivalRate": 96.9, "breedFarm": "오계25", "pigletFarm": "오계25"}, {"farm": "양동", "group": "양동-양동-2026-002", "category": "비육돈", "location": "B016", "entryDate": "2026-04-25", "entryCount": 340, "entryAgeDays": 70.0, "weightPerHead": 29.9, "initialCount": 340, "claim": 0, "currentAgeDays": 178, "deaths": 12, "sold": 60, "currentStock": 268, "survivalRate": 96.5, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "파파1", "group": "파파1-파파1-2026-001", "category": "비육돈", "location": "B132", "entryDate": "2026-04-27", "entryCount": 683, "entryAgeDays": 70.0, "weightPerHead": 28.6, "initialCount": 690, "claim": 7, "currentAgeDays": 176, "deaths": 20, "sold": 0, "currentStock": 663, "survivalRate": 97.1, "breedFarm": "오계25", "pigletFarm": "오계25"}, {"farm": "자연생명", "group": "자연생명-자연생명-2026-003", "category": "비육돈", "location": "B129", "entryDate": "2026-04-28", "entryCount": 505, "entryAgeDays": 70.0, "weightPerHead": 30.0, "initialCount": 513, "claim": 8, "currentAgeDays": 175, "deaths": 25, "sold": 0, "currentStock": 480, "survivalRate": 95.0, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "진정2", "group": "진정2-진정2-2026-008", "category": "비육돈", "location": "B020", "entryDate": "2026-04-29", "entryCount": 260, "entryAgeDays": 70.0, "weightPerHead": 30.9, "initialCount": 264, "claim": 4, "currentAgeDays": 174, "deaths": 25, "sold": 5, "currentStock": 230, "survivalRate": 90.4, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "성웅용인", "group": "성웅용인-성웅용인-2026-004", "category": "비육돈", "location": "B012", "entryDate": "2026-04-30", "entryCount": 600, "entryAgeDays": 70.0, "weightPerHead": 24.1, "initialCount": 600, "claim": 0, "currentAgeDays": 173, "deaths": 29, "sold": 0, "currentStock": 571, "survivalRate": 95.2, "breedFarm": "인티-화서농장(이병용)", "pigletFarm": "인티-화서농장(이병용)"}, {"farm": "거성", "group": "거성-거성-2026-003", "category": "비육돈", "location": "B128", "entryDate": "2026-05-01", "entryCount": 364, "entryAgeDays": 69.0, "weightPerHead": 27.7, "initialCount": 370, "claim": 6, "currentAgeDays": 171, "deaths": 11, "sold": 0, "currentStock": 353, "survivalRate": 97.0, "breedFarm": "오계25", "pigletFarm": "오계25"}, {"farm": "파파1", "group": "파파1-파파1-2026-002", "category": "비육돈", "location": "B132", "entryDate": "2026-05-01", "entryCount": 350, "entryAgeDays": 70.0, "weightPerHead": 31.5, "initialCount": 350, "claim": 0, "currentAgeDays": 172, "deaths": 18, "sold": 0, "currentStock": 332, "survivalRate": 94.9, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "신흥2", "group": "신흥2-신흥2-2026-005", "category": "비육돈", "location": "B108", "entryDate": "2026-05-05", "entryCount": 396, "entryAgeDays": 73.0, "weightPerHead": 30.6, "initialCount": 400, "claim": 4, "currentAgeDays": 171, "deaths": 29, "sold": 33, "currentStock": 334, "survivalRate": 92.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-006", "category": "비육돈", "location": "B026", "entryDate": "2026-05-05", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 22.1, "initialCount": 324, "claim": 0, "currentAgeDays": 168, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "신흥2", "group": "신흥2-신흥2-2026-006", "category": "비육돈", "location": "B108", "entryDate": "2026-05-06", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 29.8, "initialCount": 400, "claim": 4, "currentAgeDays": 167, "deaths": 29, "sold": 0, "currentStock": 367, "survivalRate": 92.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "광남농본축산단지", "group": "광남농본축산단지-광남농본(조윤상)-2026-002", "category": "비육돈", "location": "B142", "entryDate": "2026-05-07", "entryCount": 713, "entryAgeDays": 67.0, "weightPerHead": 26.8, "initialCount": 725, "claim": 12, "currentAgeDays": 163, "deaths": 10, "sold": 0, "currentStock": 703, "survivalRate": 98.6, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "신흥2", "group": "신흥2-신흥2-2026-007", "category": "비육돈", "location": "B108", "entryDate": "2026-05-13", "entryCount": 393, "entryAgeDays": 77.0, "weightPerHead": 30.0, "initialCount": 400, "claim": 7, "currentAgeDays": 167, "deaths": 29, "sold": 0, "currentStock": 364, "survivalRate": 92.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "광남농본축산단지", "group": "광남농본축산단지-광남농본(조윤상)-2026-003", "category": "비육돈", "location": "B142", "entryDate": "2026-05-14", "entryCount": 790, "entryAgeDays": 68.0, "weightPerHead": 25.6, "initialCount": 805, "claim": 15, "currentAgeDays": 157, "deaths": 9, "sold": 0, "currentStock": 781, "survivalRate": 98.9, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "보림가산", "group": "보림가산-보림가산-2026-003", "category": "비육돈", "location": "B010", "entryDate": "2026-05-15", "entryCount": 450, "entryAgeDays": 71.0, "weightPerHead": 33.5, "initialCount": 450, "claim": 0, "currentAgeDays": 159, "deaths": 26, "sold": 0, "currentStock": 424, "survivalRate": 94.2, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "이천자돈 직영농장(팜스코바이오인티)"}, {"farm": "보림창수", "group": "보림창수-보림창수-2026-003", "category": "비육돈", "location": "B011", "entryDate": "2026-05-15", "entryCount": 350, "entryAgeDays": 71.0, "weightPerHead": 29.9, "initialCount": 350, "claim": 0, "currentAgeDays": 159, "deaths": 20, "sold": 0, "currentStock": 330, "survivalRate": 94.3, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "이천자돈 직영농장(팜스코바이오인티)"}, {"farm": "진정2", "group": "진정2-진정2-2026-009", "category": "비육돈", "location": "B020", "entryDate": "2026-05-19", "entryCount": 259, "entryAgeDays": 76.0, "weightPerHead": 33.5, "initialCount": 264, "claim": 5, "currentAgeDays": 160, "deaths": 23, "sold": 5, "currentStock": 231, "survivalRate": 91.1, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-007", "category": "비육돈", "location": "B026", "entryDate": "2026-05-19", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 149, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "신흥2", "group": "신흥2-신흥2-2026-008", "category": "비육돈", "location": "B108", "entryDate": "2026-05-20", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 29.6, "initialCount": 400, "claim": 4, "currentAgeDays": 153, "deaths": 29, "sold": 0, "currentStock": 367, "survivalRate": 92.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "박석3(비육)", "group": "박석3(비육)-박석3(비육)-2026-005", "category": "비육돈", "location": "B103", "entryDate": "2026-05-21", "entryCount": 1019, "entryAgeDays": 68.0, "weightPerHead": 26.8, "initialCount": 1040, "claim": 21, "currentAgeDays": 150, "deaths": 51, "sold": 0, "currentStock": 968, "survivalRate": 95.0, "breedFarm": "박석3(자돈)", "pigletFarm": "오계25"}, {"farm": "진정2", "group": "진정2-진정2-2026-010", "category": "비육돈", "location": "B020", "entryDate": "2026-05-27", "entryCount": 259, "entryAgeDays": 70.0, "weightPerHead": 28.5, "initialCount": 264, "claim": 5, "currentAgeDays": 146, "deaths": 22, "sold": 0, "currentStock": 237, "survivalRate": 91.5, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "자연생명", "group": "자연생명-자연생명-2026-004", "category": "비육돈", "location": "B129", "entryDate": "2026-05-28", "entryCount": 503, "entryAgeDays": 70.0, "weightPerHead": 27.8, "initialCount": 513, "claim": 10, "currentAgeDays": 145, "deaths": 7, "sold": 0, "currentStock": 496, "survivalRate": 98.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "파파1", "group": "파파1-파파1-2026-003", "category": "비육돈", "location": "B132", "entryDate": "2026-05-29", "entryCount": 210, "entryAgeDays": 65.0, "weightPerHead": 31.5, "initialCount": 210, "claim": 0, "currentAgeDays": 139, "deaths": 11, "sold": 0, "currentStock": 199, "survivalRate": 94.8, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "고도", "group": "고도-고도-2026-002", "category": "비육돈", "location": "B002", "entryDate": "2026-05-30", "entryCount": 495, "entryAgeDays": 68.0, "weightPerHead": 26.4, "initialCount": 500, "claim": 5, "currentAgeDays": 141, "deaths": 20, "sold": 0, "currentStock": 475, "survivalRate": 96.0, "breedFarm": "주식회사하이팜", "pigletFarm": "인티-오케이(허용)"}, {"farm": "진정2", "group": "진정2-진정2-2026-011", "category": "비육돈", "location": "B020", "entryDate": "2026-06-02", "entryCount": 259, "entryAgeDays": 69.0, "weightPerHead": 28.1, "initialCount": 264, "claim": 5, "currentAgeDays": 139, "deaths": 12, "sold": 0, "currentStock": 247, "survivalRate": 95.4, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-008", "category": "비육돈", "location": "B026", "entryDate": "2026-06-02", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.2, "initialCount": 324, "claim": 0, "currentAgeDays": 135, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "대왕", "group": "대왕-대왕-2026-003", "category": "비육돈", "location": "B006", "entryDate": "2026-06-03", "entryCount": 589, "entryAgeDays": 70.0, "weightPerHead": 30.7, "initialCount": 600, "claim": 11, "currentAgeDays": 139, "deaths": 7, "sold": 0, "currentStock": 582, "survivalRate": 98.8, "breedFarm": "농업회사법인 돈앤돈(주)", "pigletFarm": "농업회사법인 돈앤돈(주)"}, {"farm": "박석3(비육)", "group": "박석3(비육)-박석3(비육)-2026-006", "category": "비육돈", "location": "B103", "entryDate": "2026-06-03", "entryCount": 372, "entryAgeDays": 70.0, "weightPerHead": 25.8, "initialCount": 372, "claim": 0, "currentAgeDays": 139, "deaths": 20, "sold": 0, "currentStock": 352, "survivalRate": 94.6, "breedFarm": "주식회사하이팜", "pigletFarm": "박석3(자돈)"}, {"farm": "진정1-2", "group": "진정1-2-진정1-2-2026-002", "category": "비육돈", "location": "B100", "entryDate": "2026-06-04", "entryCount": 317, "entryAgeDays": 71.0, "weightPerHead": 26.9, "initialCount": 323, "claim": 6, "currentAgeDays": 139, "deaths": 2, "sold": 0, "currentStock": 315, "survivalRate": 99.4, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "준석", "group": "준석-준석-2026-002", "category": "비육돈", "location": "B018", "entryDate": "2026-06-05", "entryCount": 930, "entryAgeDays": 67.0, "weightPerHead": 24.0, "initialCount": 950, "claim": 20, "currentAgeDays": 134, "deaths": 41, "sold": 0, "currentStock": 889, "survivalRate": 95.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "신흥2", "group": "신흥2-신흥2-2026-009", "category": "비육돈", "location": "B108", "entryDate": "2026-06-12", "entryCount": 394, "entryAgeDays": 67.0, "weightPerHead": 24.7, "initialCount": 400, "claim": 6, "currentAgeDays": 127, "deaths": 29, "sold": 0, "currentStock": 365, "survivalRate": 92.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "고도", "group": "고도-고도-2026-003", "category": "비육돈", "location": "B002", "entryDate": "2026-06-13", "entryCount": 610, "entryAgeDays": 74.0, "weightPerHead": 28.5, "initialCount": 620, "claim": 10, "currentAgeDays": 133, "deaths": 30, "sold": 0, "currentStock": 580, "survivalRate": 95.1, "breedFarm": "주식회사하이팜", "pigletFarm": "인티-오케이(허용)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-009", "category": "비육돈", "location": "B026", "entryDate": "2026-06-16", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.6, "initialCount": 324, "claim": 0, "currentAgeDays": 121, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "진정2", "group": "진정2-진정2-2026-012", "category": "비육돈", "location": "B020", "entryDate": "2026-06-17", "entryCount": 260, "entryAgeDays": 70.0, "weightPerHead": 32.4, "initialCount": 264, "claim": 4, "currentAgeDays": 125, "deaths": 12, "sold": 0, "currentStock": 248, "survivalRate": 95.4, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "진정1", "group": "진정1-진정1-2026-002", "category": "비육돈", "location": "B019", "entryDate": "2026-06-18", "entryCount": 648, "entryAgeDays": 68.0, "weightPerHead": 27.4, "initialCount": 660, "claim": 12, "currentAgeDays": 122, "deaths": 2, "sold": 0, "currentStock": 646, "survivalRate": 99.7, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "백근", "group": "백근-백근-2026-002", "category": "비육돈", "location": "B009", "entryDate": "2026-06-19", "entryCount": 423, "entryAgeDays": 65.0, "weightPerHead": 24.9, "initialCount": 430, "claim": 7, "currentAgeDays": 118, "deaths": 2, "sold": 0, "currentStock": 421, "survivalRate": 99.5, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농2301"}, {"farm": "무리울", "group": "무리울-무리울(이상현)-2026-001", "category": "비육돈", "location": "B150", "entryDate": "2026-06-25", "entryCount": 590, "entryAgeDays": 61.0, "weightPerHead": 23.2, "initialCount": 600, "claim": 10, "currentAgeDays": 108, "deaths": 20, "sold": 0, "currentStock": 570, "survivalRate": 96.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농(김병민)"}, {"farm": "JB행복", "group": "JB행복-JB행복-2026-002", "category": "비육돈", "location": "B101", "entryDate": "2026-06-26", "entryCount": 888, "entryAgeDays": 76.0, "weightPerHead": 30.0, "initialCount": 900, "claim": 12, "currentAgeDays": 122, "deaths": 35, "sold": 0, "currentStock": 853, "survivalRate": 96.1, "breedFarm": "농가축산", "pigletFarm": "오계25"}, {"farm": "신옥산", "group": "신옥산-신옥산-2026-003", "category": "비육돈", "location": "B015", "entryDate": "2026-06-27", "entryCount": 400, "entryAgeDays": 70.0, "weightPerHead": 32.0, "initialCount": 400, "claim": 0, "currentAgeDays": 115, "deaths": 4, "sold": 0, "currentStock": 396, "survivalRate": 99.0, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-010", "category": "비육돈", "location": "B026", "entryDate": "2026-06-30", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 324, "claim": 0, "currentAgeDays": 112, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "광남농본축산단지", "group": "광남농본축산단지-광남농본(조윤상)-2026-004", "category": "비육돈", "location": "B142", "entryDate": "2026-07-01", "entryCount": 837, "entryAgeDays": 74.0, "weightPerHead": 29.1, "initialCount": 850, "claim": 13, "currentAgeDays": 115, "deaths": 2, "sold": 0, "currentStock": 835, "survivalRate": 99.8, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "진정2", "group": "진정2-진정2-2026-013", "category": "비육돈", "location": "B020", "entryDate": "2026-07-02", "entryCount": 260, "entryAgeDays": 64.0, "weightPerHead": 25.8, "initialCount": 264, "claim": 4, "currentAgeDays": 104, "deaths": 0, "sold": 0, "currentStock": 260, "survivalRate": 100.0, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "보림창수", "group": "보림창수-보림창수-2026-004", "category": "비육돈", "location": "B011", "entryDate": "2026-07-04", "entryCount": 480, "entryAgeDays": 121.0, "weightPerHead": 60.3, "initialCount": 480, "claim": 0, "currentAgeDays": 159, "deaths": 12, "sold": 0, "currentStock": 468, "survivalRate": 97.5, "breedFarm": "이천자돈 직영농장(팜스코바이오인티)", "pigletFarm": "인티-개군(김문수)"}, {"farm": "개군", "group": "개군-개군-2026-004", "category": "비육돈", "location": "B001", "entryDate": "2026-07-06", "entryCount": 374, "entryAgeDays": 70.0, "weightPerHead": 27.8, "initialCount": 380, "claim": 6, "currentAgeDays": 106, "deaths": 2, "sold": 0, "currentStock": 372, "survivalRate": 99.5, "breedFarm": "농업회사법인 돈앤돈(주)", "pigletFarm": "농업회사법인 돈앤돈(주)"}, {"farm": "기쁨", "group": "기쁨-기쁨-2026-003", "category": "비육돈", "location": "B004", "entryDate": "2026-07-08", "entryCount": 520, "entryAgeDays": 63.0, "weightPerHead": 24.4, "initialCount": 530, "claim": 10, "currentAgeDays": 97, "deaths": 9, "sold": 0, "currentStock": 511, "survivalRate": 98.3, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농(김병민)"}, {"farm": "박석3(비육)", "group": "박석3(비육)-박석3(비육)-2026-007", "category": "비육돈", "location": "B103", "entryDate": "2026-07-10", "entryCount": 254, "entryAgeDays": 51.0, "weightPerHead": 19.6, "initialCount": 254, "claim": 0, "currentAgeDays": 83, "deaths": 10, "sold": 0, "currentStock": 244, "survivalRate": 96.1, "breedFarm": "주식회사하이팜", "pigletFarm": "박석3(자돈)"}, {"farm": "신옥산", "group": "신옥산-신옥산-2026-004", "category": "비육돈", "location": "B015", "entryDate": "2026-07-11", "entryCount": 210, "entryAgeDays": 70.0, "weightPerHead": 31.5, "initialCount": 210, "claim": 0, "currentAgeDays": 101, "deaths": 3, "sold": 0, "currentStock": 207, "survivalRate": 98.6, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "개군", "group": "개군-개군-2026-005", "category": "비육돈", "location": "B001", "entryDate": "2026-07-14", "entryCount": 424, "entryAgeDays": 70.0, "weightPerHead": 29.5, "initialCount": 430, "claim": 6, "currentAgeDays": 98, "deaths": 2, "sold": 0, "currentStock": 422, "survivalRate": 99.5, "breedFarm": "농업회사법인 돈앤돈(주)", "pigletFarm": "농업회사법인 돈앤돈(주)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-011", "category": "비육돈", "location": "B026", "entryDate": "2026-07-14", "entryCount": 324, "entryAgeDays": 62.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 90, "deaths": 10, "sold": 0, "currentStock": 314, "survivalRate": 96.9, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "광남농본축산단지", "group": "광남농본축산단지-광남농본(조윤상)-2026-005", "category": "비육돈", "location": "B142", "entryDate": "2026-07-15", "entryCount": 814, "entryAgeDays": 74.0, "weightPerHead": 28.8, "initialCount": 825, "claim": 11, "currentAgeDays": 101, "deaths": 0, "sold": 0, "currentStock": 814, "survivalRate": 100.0, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "웰빙파주(이만기)", "group": "웰빙파주(이만기)-웰빙파주(이만기)-2026-004", "category": "비육돈", "location": "B140", "entryDate": "2026-07-16", "entryCount": 980, "entryAgeDays": 71.0, "weightPerHead": 28.7, "initialCount": 1000, "claim": 20, "currentAgeDays": 97, "deaths": 10, "sold": 0, "currentStock": 970, "survivalRate": 99.0, "breedFarm": "주식회사하이팜", "pigletFarm": "인티-오계(유병승)"}, {"farm": "박석3(자돈)", "group": "박석3(자돈)-박석3(자돈)-2026-004", "category": "자돈", "location": "J013", "entryDate": "2026-07-17", "entryCount": 294, "entryAgeDays": 21.0, "weightPerHead": 6.4, "initialCount": 294, "claim": 0, "currentAgeDays": 46, "deaths": 7, "sold": 0, "currentStock": 287, "survivalRate": 97.6, "breedFarm": "주식회사하이팜", "pigletFarm": null}, {"farm": "기쁨", "group": "기쁨-기쁨-2026-004", "category": "비육돈", "location": "B004", "entryDate": "2026-07-17", "entryCount": 529, "entryAgeDays": 65.0, "weightPerHead": 23.5, "initialCount": 540, "claim": 11, "currentAgeDays": 90, "deaths": 9, "sold": 0, "currentStock": 520, "survivalRate": 98.3, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농(김병민)"}, {"farm": "신흥1", "group": "신흥1-신흥1-2026-004", "category": "비육돈", "location": "B107", "entryDate": "2026-07-21", "entryCount": 570, "entryAgeDays": 63.0, "weightPerHead": 23.3, "initialCount": 580, "claim": 10, "currentAgeDays": 84, "deaths": 8, "sold": 0, "currentStock": 562, "survivalRate": 98.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "진정2", "group": "진정2-진정2-2026-014", "category": "비육돈", "location": "B020", "entryDate": "2026-07-23", "entryCount": 255, "entryAgeDays": 64.0, "weightPerHead": 22.0, "initialCount": 264, "claim": 9, "currentAgeDays": 83, "deaths": 0, "sold": 0, "currentStock": 255, "survivalRate": 100.0, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "자연생명", "group": "자연생명-자연생명-2026-005", "category": "비육돈", "location": "B129", "entryDate": "2026-07-24", "entryCount": 499, "entryAgeDays": 59.0, "weightPerHead": 20.0, "initialCount": 513, "claim": 14, "currentAgeDays": 77, "deaths": 0, "sold": 0, "currentStock": 499, "survivalRate": 100.0, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농25"}, {"farm": "신옥산", "group": "신옥산-신옥산-2026-005", "category": "비육돈", "location": "B015", "entryDate": "2026-07-25", "entryCount": 340, "entryAgeDays": 70.0, "weightPerHead": 32.6, "initialCount": 340, "claim": 0, "currentAgeDays": 87, "deaths": 0, "sold": 0, "currentStock": 340, "survivalRate": 100.0, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "한영", "group": "한영-한영-2026-003", "category": "비육돈", "location": "B025", "entryDate": "2026-07-26", "entryCount": 435, "entryAgeDays": 78.0, "weightPerHead": 30.4, "initialCount": 445, "claim": 10, "currentAgeDays": 94, "deaths": 0, "sold": 0, "currentStock": 435, "survivalRate": 100.0, "breedFarm": "인티-오계(유병승)", "pigletFarm": "인티-오계(유병승)"}, {"farm": "한국", "group": "한국-한국-2026-004", "category": "비육돈", "location": "B024", "entryDate": "2026-07-29", "entryCount": 370, "entryAgeDays": 63.0, "weightPerHead": 26.5, "initialCount": 370, "claim": 0, "currentAgeDays": 76, "deaths": 7, "sold": 0, "currentStock": 363, "survivalRate": 98.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "태양2", "group": "태양2-태양2-2026-003", "category": "비육돈", "location": "B022", "entryDate": "2026-07-30", "entryCount": 1261, "entryAgeDays": 60.0, "weightPerHead": 20.7, "initialCount": 1300, "claim": 39, "currentAgeDays": 72, "deaths": 5, "sold": 0, "currentStock": 1256, "survivalRate": 99.6, "breedFarm": "대성축산(증평) 모돈직영농장(팜스코)", "pigletFarm": "태농(김병민)"}, {"farm": "양동", "group": "양동-양동-2026-003", "category": "비육돈", "location": "B016", "entryDate": "2026-08-09", "entryCount": 200, "entryAgeDays": 70.0, "weightPerHead": 31.6, "initialCount": 200, "claim": 0, "currentAgeDays": 72, "deaths": 0, "sold": 0, "currentStock": 200, "survivalRate": 100.0, "breedFarm": "인티-디디팜(이창번)", "pigletFarm": "인티-디디팜(이창번)"}, {"farm": "태양2", "group": "태양2---", "category": "자돈", "location": null, "entryDate": "2026-08-10", "entryCount": 319, "entryAgeDays": null, "weightPerHead": null, "initialCount": 319, "claim": null, "currentAgeDays": null, "deaths": 0, "sold": 0, "currentStock": 319, "survivalRate": null, "breedFarm": null, "pigletFarm": "태농2301"}, {"farm": "태양2", "group": "태양2---", "category": "자돈", "location": null, "entryDate": "2026-08-10", "entryCount": 431, "entryAgeDays": null, "weightPerHead": null, "initialCount": 431, "claim": null, "currentAgeDays": null, "deaths": 0, "sold": 0, "currentStock": 431, "survivalRate": null, "breedFarm": null, "pigletFarm": "태농2301"}];
+const FARM_AGG = [{"farm": "광남농본축산단지", "groups": 4, "category": "비육돈", "entryCount": 3154, "currentStock": 3133, "deaths": 21, "sold": 0, "survivalRate": 99.35491439441978, "latestEntryDate": "2026-07-15"}, {"farm": "웰빙파주(이만기)", "groups": 3, "category": "비육돈", "entryCount": 2762, "currentStock": 2177, "deaths": 80, "sold": 505, "survivalRate": 97.12896451846487, "latestEntryDate": "2026-07-16"}, {"farm": "박석3(비육)", "groups": 5, "category": "비육돈", "entryCount": 2268, "currentStock": 2107, "deaths": 137, "sold": 24, "survivalRate": 93.96569664902998, "latestEntryDate": "2026-07-10"}, {"farm": "태양2", "groups": 3, "category": "자돈", "entryCount": 2011, "currentStock": 2006, "deaths": 5, "sold": 0, "survivalRate": 99.6, "latestEntryDate": "2026-08-10"}, {"farm": "진정2", "groups": 9, "category": "비육돈", "entryCount": 2330, "currentStock": 1945, "deaths": 141, "sold": 244, "survivalRate": 93.9468669527897, "latestEntryDate": "2026-07-23"}, {"farm": "형제파주", "groups": 6, "category": "비육돈", "entryCount": 1944, "currentStock": 1863, "deaths": 81, "sold": 0, "survivalRate": 95.85, "latestEntryDate": "2026-07-14"}, {"farm": "신흥2", "groups": 5, "category": "비육돈", "entryCount": 1975, "currentStock": 1797, "deaths": 145, "sold": 33, "survivalRate": 92.66015189873418, "latestEntryDate": "2026-06-12"}, {"farm": "자연생명", "groups": 4, "category": "비육돈", "entryCount": 2012, "currentStock": 1739, "deaths": 54, "sold": 219, "survivalRate": 97.29065606361829, "latestEntryDate": "2026-07-24"}, {"farm": "성웅용인", "groups": 4, "category": "비육돈", "entryCount": 2400, "currentStock": 1309, "deaths": 112, "sold": 979, "survivalRate": 95.325, "latestEntryDate": "2026-04-30"}, {"farm": "파파1", "groups": 3, "category": "비육돈", "entryCount": 1243, "currentStock": 1194, "deaths": 49, "sold": 0, "survivalRate": 96.09195494770717, "latestEntryDate": "2026-05-29"}, {"farm": "신흥1", "groups": 3, "category": "비육돈", "entryCount": 1503, "currentStock": 1080, "deaths": 74, "sold": 349, "survivalRate": 95.08522954091816, "latestEntryDate": "2026-07-21"}, {"farm": "고도", "groups": 2, "category": "비육돈", "entryCount": 1105, "currentStock": 1055, "deaths": 50, "sold": 0, "survivalRate": 95.50316742081448, "latestEntryDate": "2026-06-13"}, {"farm": "기쁨", "groups": 2, "category": "비육돈", "entryCount": 1049, "currentStock": 1031, "deaths": 18, "sold": 0, "survivalRate": 98.3, "latestEntryDate": "2026-07-17"}, {"farm": "신옥산", "groups": 3, "category": "비육돈", "entryCount": 950, "currentStock": 943, "deaths": 7, "sold": 0, "survivalRate": 99.26947368421052, "latestEntryDate": "2026-07-25"}, {"farm": "거성", "groups": 3, "category": "비육돈", "entryCount": 1550, "currentStock": 905, "deaths": 45, "sold": 600, "survivalRate": 97.12993548387097, "latestEntryDate": "2026-05-01"}, {"farm": "한국", "groups": 3, "category": "비육돈", "entryCount": 1110, "currentStock": 905, "deaths": 57, "sold": 148, "survivalRate": 94.83333333333333, "latestEntryDate": "2026-07-29"}, {"farm": "준석", "groups": 1, "category": "비육돈", "entryCount": 930, "currentStock": 889, "deaths": 41, "sold": 0, "survivalRate": 95.6, "latestEntryDate": "2026-06-05"}, {"farm": "보림창수", "groups": 4, "category": "비육돈", "entryCount": 1630, "currentStock": 861, "deaths": 138, "sold": 631, "survivalRate": 91.5521472392638, "latestEntryDate": "2026-07-04"}, {"farm": "JB행복", "groups": 1, "category": "비육돈", "entryCount": 888, "currentStock": 853, "deaths": 35, "sold": 0, "survivalRate": 96.09999999999998, "latestEntryDate": "2026-06-26"}, {"farm": "개군", "groups": 2, "category": "비육돈", "entryCount": 798, "currentStock": 794, "deaths": 4, "sold": 0, "survivalRate": 99.5, "latestEntryDate": "2026-07-14"}, {"farm": "진정1", "groups": 1, "category": "비육돈", "entryCount": 648, "currentStock": 646, "deaths": 2, "sold": 0, "survivalRate": 99.7, "latestEntryDate": "2026-06-18"}, {"farm": "찬양", "groups": 2, "category": "비육돈", "entryCount": 875, "currentStock": 590, "deaths": 42, "sold": 243, "survivalRate": 95.21085714285714, "latestEntryDate": "2026-04-18"}, {"farm": "대왕", "groups": 1, "category": "비육돈", "entryCount": 589, "currentStock": 582, "deaths": 7, "sold": 0, "survivalRate": 98.8, "latestEntryDate": "2026-06-03"}, {"farm": "한영", "groups": 2, "category": "비육돈", "entryCount": 805, "currentStock": 581, "deaths": 18, "sold": 206, "survivalRate": 97.74782608695652, "latestEntryDate": "2026-07-26"}, {"farm": "무리울", "groups": 1, "category": "비육돈", "entryCount": 590, "currentStock": 570, "deaths": 20, "sold": 0, "survivalRate": 96.6, "latestEntryDate": "2026-06-25"}, {"farm": "보림가산", "groups": 2, "category": "비육돈", "entryCount": 900, "currentStock": 533, "deaths": 48, "sold": 319, "survivalRate": 94.65, "latestEntryDate": "2026-05-15"}, {"farm": "양동", "groups": 3, "category": "비육돈", "entryCount": 1150, "currentStock": 528, "deaths": 35, "sold": 587, "survivalRate": 96.94956521739131, "latestEntryDate": "2026-08-09"}, {"farm": "백근", "groups": 1, "category": "비육돈", "entryCount": 423, "currentStock": 421, "deaths": 2, "sold": 0, "survivalRate": 99.5, "latestEntryDate": "2026-06-19"}, {"farm": "진정1-2", "groups": 1, "category": "비육돈", "entryCount": 317, "currentStock": 315, "deaths": 2, "sold": 0, "survivalRate": 99.4, "latestEntryDate": "2026-06-04"}, {"farm": "박석3(자돈)", "groups": 1, "category": "자돈", "entryCount": 294, "currentStock": 287, "deaths": 7, "sold": 0, "survivalRate": 97.6, "latestEntryDate": "2026-07-17"}];
+const MONTHLY = [{"month": "2026-02", "entryCount": 450}, {"month": "2026-03", "entryCount": 2100}, {"month": "2026-04", "entryCount": 11030}, {"month": "2026-05", "entryCount": 7991}, {"month": "2026-06", "entryCount": 7652}, {"month": "2026-07", "entryCount": 10030}, {"month": "2026-08", "entryCount": 950}];
+
+const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
+const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
+const monthLabel = m => (parseInt(m.slice(5,7),10)) + '월';
+
+function statusOf(rate) {
+  if (rate === null || rate === undefined || Number.isNaN(rate)) return null;
+  if (rate >= 96) return 'good';
+  if (rate >= 90) return 'warning';
+  return 'critical';
+}
+const statusText = { good: '양호', warning: '주의', critical: '위험' };
+
+// ---------------- Header meta ----------------
+const dates = RECORDS.map(r => r.entryDate).sort();
+document.getElementById('dateRange').textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
+document.getElementById('farmCountMeta').textContent = FARM_AGG.length;
+document.getElementById('groupCountMeta').textContent = RECORDS.length;
+document.getElementById('generatedAt').textContent = '생성: ' + new Date().toISOString().slice(0,10);
+
+// ---------------- KPIs ----------------
+const totalEntry = RECORDS.reduce((s, r) => s + r.entryCount, 0);
+const totalStock = RECORDS.reduce((s, r) => s + r.currentStock, 0);
+const totalDeaths = RECORDS.reduce((s, r) => s + r.deaths, 0);
+const totalSold = RECORDS.reduce((s, r) => s + r.sold, 0);
+const rated = RECORDS.filter(r => r.survivalRate !== null);
+const weightedRate = rated.reduce((s, r) => s + r.survivalRate * r.entryCount, 0) / rated.reduce((s, r) => s + r.entryCount, 0);
+const mortalityRate = totalDeaths / totalEntry * 100;
+const stockShare = totalStock / totalEntry * 100;
+
+const kpis = [
+  { label: '사육 농장', value: FARM_AGG.length, unit: '개', sub: RECORDS.length + '개 배치 운영중' },
+  { label: '누적 입식두수', value: fmt(totalEntry), unit: '두', sub: dates[0].slice(0,7) + ' ~ ' + dates[dates.length-1].slice(0,7) },
+  { label: '현재 사육두수', value: fmt(totalStock), unit: '두', sub: '입식 대비 ' + fmt1(stockShare) + '%' },
+  { label: '누적 폐사두수', value: fmt(totalDeaths), unit: '두', sub: '폐사율 ' + fmt1(mortalityRate) + '%', status: mortalityRate >= 6 ? 'critical' : (mortalityRate >= 4 ? 'warning' : 'good') },
+  { label: '누적 출하두수', value: fmt(totalSold), unit: '두', sub: '입식 대비 ' + fmt1(totalSold/totalEntry*100) + '%' },
+  { label: '가중평균 육성률', value: fmt1(weightedRate), unit: '%', sub: statusText[statusOf(weightedRate)], status: statusOf(weightedRate) },
+];
+document.getElementById('kpiRow').innerHTML = kpis.map(k => `
+  <div class="kpi">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value mono">${k.value}<span class="unit">${k.unit}</span></div>
+    <div class="kpi-sub${k.status ? ' status-' + k.status : ''}">${k.sub}</div>
+  </div>
+`).join('');
+
+document.getElementById('totalEntryLabel').textContent = fmt(totalEntry);
+
+// ---------------- Tooltip ----------------
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(evt, html) {
+  tooltipEl.innerHTML = html;
+  tooltipEl.classList.add('show');
+  positionTooltip(evt);
+}
+function positionTooltip(evt) {
+  const pad = 14;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  const rect = tooltipEl.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth - 8) x = evt.clientX - rect.width - pad;
+  if (y + rect.height > window.innerHeight - 8) y = evt.clientY - rect.height - pad;
+  tooltipEl.style.left = x + 'px';
+  tooltipEl.style.top = y + 'px';
+}
+function hideTooltip() { tooltipEl.classList.remove('show'); }
+
+// ---------------- Farm ranking bar chart ----------------
+function renderFarmChart() {
+  const top = FARM_AGG.slice().sort((a,b) => b.currentStock - a.currentStock).slice(0, 12);
+  const max = Math.max(...top.map(f => f.currentStock));
+  const el = document.getElementById('farmChart');
+  el.innerHTML = top.map(f => {
+    const pct = Math.max(f.currentStock / max * 100, 1.5);
+    const st = statusOf(f.survivalRate);
+    return `<div class="bar-row" data-farm="${f.farm}">
+      <div class="bar-label" title="${f.farm}">${f.farm}</div>
+      <div class="bar-track">
+        <div class="bar-fill st-${st}" style="width:${pct}%"></div>
+        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(f.currentStock)}두</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.bar-row').forEach(row => {
+    const f = top.find(x => x.farm === row.dataset.farm);
+    row.addEventListener('mousemove', e => showTooltip(e, `
+      <div><b>${f.farm}</b></div>
+      <div class="t-row"><span>배치 수</span><span>${f.groups}개</span></div>
+      <div class="t-row"><span>전입두수</span><span>${fmt(f.entryCount)}두</span></div>
+      <div class="t-row"><span>현재고</span><span>${fmt(f.currentStock)}두</span></div>
+      <div class="t-row"><span>폐사두수</span><span>${fmt(f.deaths)}두</span></div>
+      <div class="t-row"><span>육성률</span><span>${f.survivalRate !== null ? fmt1(f.survivalRate) + '%' : '-'}</span></div>
+    `));
+    row.addEventListener('mouseleave', hideTooltip);
+  });
+
+  document.getElementById('farmChartTable').innerHTML = `
+    <table class="mini-table"><thead><tr><th>농장명</th><th>현재고</th><th>육성률</th></tr></thead>
+    <tbody>${top.map(f => `<tr><td>${f.farm}</td><td class="mono">${fmt(f.currentStock)}두</td><td class="mono">${f.survivalRate !== null ? fmt1(f.survivalRate)+'%' : '-'}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// ---------------- Monthly vertical bar chart ----------------
+function renderMonthChart() {
+  const max = Math.max(...MONTHLY.map(m => m.entryCount));
+  const el = document.getElementById('monthChart');
+  el.innerHTML = `<div class="vbar-chart">` + MONTHLY.map(m => {
+    const pct = Math.max(m.entryCount / max * 100, 2);
+    return `<div class="vbar-col" data-month="${m.month}">
+      <div class="vbar-val mono">${fmt(m.entryCount)}</div>
+      <div class="vbar-fill" style="height:${pct}%"></div>
+      <div class="vbar-tick">${monthLabel(m.month)}</div>
+    </div>`;
+  }).join('') + `</div>`;
+
+  el.querySelectorAll('.vbar-col').forEach(col => {
+    const m = MONTHLY.find(x => x.month === col.dataset.month);
+    col.addEventListener('mousemove', e => showTooltip(e, `
+      <div><b>${m.month}</b></div>
+      <div class="t-row"><span>입식두수</span><span>${fmt(m.entryCount)}두</span></div>
+    `));
+    col.addEventListener('mouseleave', hideTooltip);
+  });
+
+  document.getElementById('monthChartTable').innerHTML = `
+    <table class="mini-table"><thead><tr><th>월</th><th>입식두수</th></tr></thead>
+    <tbody>${MONTHLY.map(m => `<tr><td>${m.month}</td><td class="mono">${fmt(m.entryCount)}두</td></tr>`).join('')}</tbody></table>`;
+}
+
+// ---------------- Outcome stacked bar ----------------
+function renderStackChart() {
+  const deaths = totalDeaths, sold = totalSold, stock = totalStock;
+  const total = deaths + sold + stock;
+  const segs = [
+    { key: 'stock', label: '현재 사육중', value: stock, color: 'var(--series-blue)' },
+    { key: 'sold', label: '출하(판매)', value: sold, color: 'var(--good)' },
+    { key: 'deaths', label: '폐사', value: deaths, color: 'var(--critical)' },
+  ];
+  const el = document.getElementById('stackChart');
+  el.innerHTML = `<div class="stack-bar">` + segs.map(s => {
+    const pct = s.value / total * 100;
+    return `<div class="stack-seg" data-key="${s.key}" style="width:${pct}%; background:${s.color}"></div>`;
+  }).join('<div style="width:2px;background:var(--surface)"></div>') + `</div>`;
+
+  el.querySelectorAll('.stack-seg').forEach(seg => {
+    const s = segs.find(x => x.key === seg.dataset.key);
+    const pct = s.value / total * 100;
+    seg.addEventListener('mousemove', e => showTooltip(e, `
+      <div><b>${s.label}</b></div>
+      <div class="t-row"><span>두수</span><span>${fmt(s.value)}두</span></div>
+      <div class="t-row"><span>비중</span><span>${fmt1(pct)}%</span></div>
+    `));
+    seg.addEventListener('mouseleave', hideTooltip);
+  });
+
+  document.getElementById('stackLegend').innerHTML = segs.map(s => `
+    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.label} · ${fmt(s.value)}두 (${fmt1(s.value/total*100)}%)</div>
+  `).join('');
+}
+
+// ---------------- Filters + Table ----------------
+const state = { category: 'all', status: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
+
+function applyFilters() {
+  return RECORDS.filter(r => {
+    if (state.category !== 'all' && r.category !== state.category) return false;
+    if (state.status !== 'all' && statusOf(r.survivalRate) !== state.status) return false;
+    if (state.search) {
+      const q = state.search.toLowerCase();
+      if (!r.farm.toLowerCase().includes(q) && !r.group.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable() {
+  let rows = applyFilters();
+  const { sortKey, sortDir } = state;
+  rows = rows.slice().sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (av === null || av === undefined) av = sortDir === 'asc' ? Infinity : -Infinity;
+    if (bv === null || bv === undefined) bv = sortDir === 'asc' ? Infinity : -Infinity;
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortDir === 'asc' ? av - bv : bv - av;
+  });
+
+  const body = document.getElementById('ledgerBody');
+  if (rows.length === 0) {
+    body.innerHTML = `<tr class="empty-row"><td colspan="10">조건에 맞는 배치가 없습니다.</td></tr>`;
+  } else {
+    body.innerHTML = rows.map(r => {
+      const st = statusOf(r.survivalRate);
+      return `<tr>
+        <td class="farm-cell">${r.farm}</td>
+        <td class="group-cell mono">${r.group}</td>
+        <td><span class="cat-chip">${r.category}</span></td>
+        <td class="mono">${r.entryDate}</td>
+        <td class="mono">${fmt(r.entryCount)}</td>
+        <td class="mono">${r.currentAgeDays !== null ? fmt(r.currentAgeDays) : '-'}</td>
+        <td class="mono">${fmt(r.deaths)}</td>
+        <td class="mono">${fmt(r.sold)}</td>
+        <td class="mono">${fmt(r.currentStock)}</td>
+        <td>${st ? `<span class="status-chip st-${st}"><span class="status-dot st-${st}"></span>${fmt1(r.survivalRate)}%</span>` : '-'}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('resultCount').textContent = `${rows.length} / ${RECORDS.length}개 배치 표시중`;
+
+  document.querySelectorAll('#ledgerTable thead th').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.key === sortKey);
+    const arrow = th.querySelector('.sort-arrow');
+    if (th.dataset.key === sortKey) arrow.textContent = sortDir === 'asc' ? '▲' : '▼';
+  });
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const { filter, value } = chip.dataset;
+    state[filter] = value;
+    document.querySelectorAll(`.chip[data-filter="${filter}"]`).forEach(c => c.classList.toggle('active', c === chip));
+    renderTable();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', e => {
+  state.search = e.target.value.trim();
+  renderTable();
+});
+document.querySelectorAll('#ledgerTable thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (state.sortKey === key) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+    else { state.sortKey = key; state.sortDir = 'desc'; }
+    renderTable();
+  });
+});
+document.querySelectorAll('.toggle-table').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.target);
+    const chartId = btn.dataset.target.replace('Table', '');
+    const chart = document.getElementById(chartId);
+    const show = target.style.display === 'none';
+    target.style.display = show ? 'block' : 'none';
+    chart.style.display = show ? 'none' : 'block';
+    btn.textContent = show ? '차트로 보기' : '표로 보기';
+  });
+});
+
+renderFarmChart();
+renderMonthChart();
+renderStackChart();
+renderTable();
+</script>
