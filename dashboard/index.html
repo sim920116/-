@@ -162,7 +162,7 @@
 
   /* ---------- Charts ---------- */
   .chart-grid {
-    display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin-bottom: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;
   }
   .chart-grid .wide { grid-column: 1 / -1; }
   .card {
@@ -325,22 +325,6 @@
     <div class="card">
       <div class="card-head">
         <div>
-          <p class="card-title">농장별 현재 사육두수</p>
-          <p class="card-caption">상위 12개 농장 · 현재고 기준</p>
-        </div>
-        <button class="toggle-table" data-target="farmChartTable">표로 보기</button>
-      </div>
-      <div class="stack-legend" style="margin:0 0 10px;">
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>양호 ≥96%</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--warning)"></span>주의 90–96%</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>위험 &lt;90%</div>
-      </div>
-      <div id="farmChart"></div>
-      <div id="farmChartTable" style="display:none"></div>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <div>
           <p class="card-title">월별 입식두수 추이</p>
           <p class="card-caption">2026년 전입일 기준 합계</p>
         </div>
@@ -348,6 +332,22 @@
       </div>
       <div id="monthChart"></div>
       <div id="monthChartTable" style="display:none"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">농장별 폐사현황</p>
+          <p class="card-caption">폐사두수 상위 12개 농장 · 전입두수 대비 폐사율</p>
+        </div>
+        <button class="toggle-table" data-target="mortalityChartTable">표로 보기</button>
+      </div>
+      <div class="stack-legend" style="margin:0 0 10px;">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>양호 &lt;4%</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--warning)"></span>주의 4–7%</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>위험 ≥7%</div>
+      </div>
+      <div id="mortalityChart"></div>
+      <div id="mortalityChartTable" style="display:none"></div>
     </div>
     <div class="card wide">
       <div class="card-head">
@@ -467,19 +467,26 @@ function positionTooltip(evt) {
 }
 function hideTooltip() { tooltipEl.classList.remove('show'); }
 
-// ---------------- Farm ranking bar chart ----------------
-function renderFarmChart() {
-  const top = FARM_AGG.slice().sort((a,b) => b.currentStock - a.currentStock).slice(0, 12);
-  const max = Math.max(...top.map(f => f.currentStock));
-  const el = document.getElementById('farmChart');
+// ---------------- Farm mortality bar chart ----------------
+function mortalityStatus(rate) {
+  if (rate < 4) return 'good';
+  if (rate < 7) return 'warning';
+  return 'critical';
+}
+
+function renderMortalityChart() {
+  const withRate = FARM_AGG.map(f => ({ ...f, mortalityRate: f.deaths / f.entryCount * 100 }));
+  const top = withRate.slice().sort((a, b) => b.deaths - a.deaths).slice(0, 12);
+  const max = Math.max(...top.map(f => f.deaths));
+  const el = document.getElementById('mortalityChart');
   el.innerHTML = top.map(f => {
-    const pct = Math.max(f.currentStock / max * 100, 1.5);
-    const st = statusOf(f.survivalRate);
+    const pct = Math.max(f.deaths / max * 100, 1.5);
+    const st = mortalityStatus(f.mortalityRate);
     return `<div class="bar-row" data-farm="${f.farm}">
       <div class="bar-label" title="${f.farm}">${f.farm}</div>
       <div class="bar-track">
         <div class="bar-fill st-${st}" style="width:${pct}%"></div>
-        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(f.currentStock)}두</div>
+        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(f.deaths)}두 (${fmt1(f.mortalityRate)}%)</div>
       </div>
     </div>`;
   }).join('');
@@ -490,16 +497,16 @@ function renderFarmChart() {
       <div><b>${f.farm}</b></div>
       <div class="t-row"><span>배치 수</span><span>${f.groups}개</span></div>
       <div class="t-row"><span>전입두수</span><span>${fmt(f.entryCount)}두</span></div>
-      <div class="t-row"><span>현재고</span><span>${fmt(f.currentStock)}두</span></div>
       <div class="t-row"><span>폐사두수</span><span>${fmt(f.deaths)}두</span></div>
-      <div class="t-row"><span>육성률</span><span>${f.survivalRate !== null ? fmt1(f.survivalRate) + '%' : '-'}</span></div>
+      <div class="t-row"><span>폐사율</span><span>${fmt1(f.mortalityRate)}%</span></div>
+      <div class="t-row"><span>현재고</span><span>${fmt(f.currentStock)}두</span></div>
     `));
     row.addEventListener('mouseleave', hideTooltip);
   });
 
-  document.getElementById('farmChartTable').innerHTML = `
-    <table class="mini-table"><thead><tr><th>농장명</th><th>현재고</th><th>육성률</th></tr></thead>
-    <tbody>${top.map(f => `<tr><td>${f.farm}</td><td class="mono">${fmt(f.currentStock)}두</td><td class="mono">${f.survivalRate !== null ? fmt1(f.survivalRate)+'%' : '-'}</td></tr>`).join('')}</tbody></table>`;
+  document.getElementById('mortalityChartTable').innerHTML = `
+    <table class="mini-table"><thead><tr><th>농장명</th><th>폐사두수</th><th>폐사율</th></tr></thead>
+    <tbody>${top.map(f => `<tr><td>${f.farm}</td><td class="mono">${fmt(f.deaths)}두</td><td class="mono">${fmt1(f.mortalityRate)}%</td></tr>`).join('')}</tbody></table>`;
 }
 
 // ---------------- Monthly vertical bar chart ----------------
@@ -647,7 +654,7 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
   });
 });
 
-renderFarmChart();
+renderMortalityChart();
 renderMonthChart();
 renderStackChart();
 renderTable();
