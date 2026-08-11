@@ -336,6 +336,35 @@
     <div class="result-count" id="resultCount"></div>
   </div>
 
+  <div class="table-card">
+    <div class="table-card-head">
+      <div>
+        <p class="card-title" style="margin-bottom:0">배치별 상세 현황</p>
+        <p class="card-caption" style="margin-bottom:0">형제파주농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="ledger" id="ledgerTable">
+        <thead>
+          <tr>
+            <th data-key="group"><button>그룹명 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="entryDate"><button>전입일 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="entryAgeDays"><button>전입일령 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="weightPerHead"><button>두당체중 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="entryCount"><button>전입두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="currentAgeDays"><button>현재일령 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="deaths"><button>폐사두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="sold"><button>판매두수 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="currentStock"><button>현재고 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="survivalRate"><button>육성률 <span class="sort-arrow">▲</span></button></th>
+          </tr>
+        </thead>
+        <tbody id="ledgerBody"></tbody>
+        <tfoot id="ledgerFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
   <div class="chart-grid">
     <div class="card wide">
       <div class="card-head">
@@ -395,35 +424,6 @@
         </div>
       </div>
       <div id="salesLog"></div>
-    </div>
-  </div>
-
-  <div class="table-card">
-    <div class="table-card-head">
-      <div>
-        <p class="card-title" style="margin-bottom:0">배치별 상세 현황</p>
-        <p class="card-caption" style="margin-bottom:0">형제파주농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬</p>
-      </div>
-    </div>
-    <div class="table-scroll">
-      <table class="ledger" id="ledgerTable">
-        <thead>
-          <tr>
-            <th data-key="group"><button>그룹명 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="entryDate"><button>전입일 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="entryAgeDays"><button>전입일령 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="weightPerHead"><button>두당체중 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="entryCount"><button>전입두수 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="currentAgeDays"><button>현재일령 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="deaths"><button>폐사두수 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="sold"><button>판매두수 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="currentStock"><button>현재고 <span class="sort-arrow">▲</span></button></th>
-            <th data-key="survivalRate"><button>육성률 <span class="sort-arrow">▲</span></button></th>
-          </tr>
-        </thead>
-        <tbody id="ledgerBody"></tbody>
-        <tfoot id="ledgerFoot"></tfoot>
-      </table>
     </div>
   </div>
 
