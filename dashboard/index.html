@@ -393,6 +393,31 @@
     <div class="card">
       <div class="card-head">
         <div>
+          <p class="card-title">개월령별 폐사두수</p>
+          <p class="card-caption">현재일령 ÷ 30 기준 월령 구간 · 폐사두수 합계</p>
+        </div>
+        <button class="toggle-table" data-target="ageDeathChartTable">표로 보기</button>
+      </div>
+      <div id="ageDeathChart"></div>
+      <div id="ageDeathChartTable" style="display:none"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">개월령별 판매두수</p>
+          <p class="card-caption">현재일령 ÷ 30 기준 월령 구간 · 판매두수 합계</p>
+        </div>
+        <button class="toggle-table" data-target="ageSoldChartTable">표로 보기</button>
+      </div>
+      <div id="ageSoldChart"></div>
+      <div id="ageSoldChartTable" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
           <p class="card-title">일자별 폐사 기록</p>
           <p class="card-caption">발생일 기준 · 그룹별 폐사 입력 내역</p>
         </div>
@@ -631,44 +656,48 @@ function renderStackChart() {
   `).join('');
 }
 
-// ---------------- Stock by age-in-months ----------------
-function renderAgeChart() {
+// ---------------- Stock/deaths/sold by age-in-months ----------------
+function buildAgeBuckets() {
   const buckets = {};
   RECORDS.forEach(r => {
-    if (r.currentAgeDays === null || r.currentStock <= 0) return;
+    if (r.currentAgeDays === null) return;
     const months = Math.floor(r.currentAgeDays / 30);
-    if (!buckets[months]) buckets[months] = { months, stock: 0, groups: [] };
+    if (!buckets[months]) buckets[months] = { months, stock: 0, deaths: 0, sold: 0, groups: [] };
     buckets[months].stock += r.currentStock;
+    buckets[months].deaths += r.deaths;
+    buckets[months].sold += r.sold;
     buckets[months].groups.push(r);
   });
-  const list = Object.values(buckets).sort((a, b) => a.months - b.months);
-  const max = Math.max(...list.map(b => b.stock));
+  return Object.values(buckets).sort((a, b) => a.months - b.months);
+}
 
-  const el = document.getElementById('ageChart');
-  el.innerHTML = list.map(b => {
-    const pct = Math.max(b.stock / max * 100, 1.5);
+function renderAgeMetricChart(chartElId, tableElId, buckets, valueKey, colorVar, colLabel) {
+  const max = Math.max(...buckets.map(b => b[valueKey]), 1);
+  const el = document.getElementById(chartElId);
+  el.innerHTML = buckets.map(b => {
+    const pct = Math.max(b[valueKey] / max * 100, 1.5);
     return `<div class="bar-row" data-months="${b.months}">
       <div class="bar-label">${b.months}개월령</div>
       <div class="bar-track">
-        <div class="bar-fill" style="width:${pct}%"></div>
-        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(b.stock)}두</div>
+        <div class="bar-fill" style="width:${pct}%; background:${colorVar}"></div>
+        <div class="bar-value" style="left:calc(${pct}% + 6px); color:var(--ink)">${fmt(b[valueKey])}두</div>
       </div>
     </div>`;
   }).join('');
 
   el.querySelectorAll('.bar-row').forEach(row => {
-    const b = list.find(x => String(x.months) === row.dataset.months);
+    const b = buckets.find(x => String(x.months) === row.dataset.months);
     row.addEventListener('mousemove', e => showTooltip(e, `
       <div><b>${b.months}개월령 (${b.months * 30}~${b.months * 30 + 29}일령)</b></div>
-      <div class="t-row"><span>현재고</span><span>${fmt(b.stock)}두</span></div>
-      ${b.groups.map(g => `<div class="t-row"><span>${g.group.slice(-3)}그룹</span><span>${fmt(g.currentStock)}두 (${fmt(g.currentAgeDays)}일령)</span></div>`).join('')}
+      <div class="t-row"><span>${colLabel}</span><span>${fmt(b[valueKey])}두</span></div>
+      ${b.groups.map(g => `<div class="t-row"><span>${g.group.slice(-3)}그룹</span><span>${fmt(g[valueKey])}두</span></div>`).join('')}
     `));
     row.addEventListener('mouseleave', hideTooltip);
   });
 
-  document.getElementById('ageChartTable').innerHTML = `
-    <table class="mini-table"><thead><tr><th>개월령</th><th>현재고</th><th>해당 그룹</th></tr></thead>
-    <tbody>${list.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b.stock)}두</td><td>${b.groups.map(g => g.group.slice(-3)).join(', ')}</td></tr>`).join('')}</tbody></table>`;
+  document.getElementById(tableElId).innerHTML = `
+    <table class="mini-table"><thead><tr><th>개월령</th><th>${colLabel}</th><th>해당 그룹</th></tr></thead>
+    <tbody>${buckets.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b[valueKey])}두</td><td>${b.groups.map(g => g.group.slice(-3)).join(', ')}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // ---------------- Daily mortality log ----------------
@@ -803,7 +832,10 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
 renderMortalityChart();
 renderMonthChart();
 renderStackChart();
-renderAgeChart();
+const AGE_BUCKETS = buildAgeBuckets();
+renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
+renderAgeMetricChart('ageDeathChart', 'ageDeathChartTable', AGE_BUCKETS, 'deaths', 'var(--critical)', '폐사두수');
+renderAgeMetricChart('ageSoldChart', 'ageSoldChartTable', AGE_BUCKETS, 'sold', 'var(--good)', '판매두수');
 renderMortalityLog();
 renderSalesLog();
 renderTable();
