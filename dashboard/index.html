@@ -847,27 +847,15 @@ function renderTable() {
 
     foot.innerHTML = `
       <tr>
-        <td>총계 (${n}개 배치)</td>
+        <td>합계·평균 (${n}개 배치)</td>
         <td>-</td>
         <td>-</td>
-        <td>-</td>
+        <td class="mono">${avg('weightPerHead') !== null ? avg('weightPerHead').toFixed(1) + 'kg' : '-'}</td>
         <td class="mono">${fmt(sum('entryCount'))}</td>
         <td>-</td>
         <td class="mono">${fmt(sum('deaths'))}</td>
         <td class="mono">${fmt(sum('sold'))}</td>
         <td class="mono">${fmt(sum('currentStock'))}</td>
-        <td>-</td>
-      </tr>
-      <tr>
-        <td>평균 (배치당)</td>
-        <td>-</td>
-        <td class="mono">${avg('entryAgeDays') !== null ? fmt1(avg('entryAgeDays')) : '-'}</td>
-        <td class="mono">${avg('weightPerHead') !== null ? avg('weightPerHead').toFixed(1) + 'kg' : '-'}</td>
-        <td class="mono">${fmt1(avg('entryCount'))}</td>
-        <td class="mono">${avg('currentAgeDays') !== null ? fmt1(avg('currentAgeDays')) : '-'}</td>
-        <td class="mono">${fmt1(avg('deaths'))}</td>
-        <td class="mono">${fmt1(avg('sold'))}</td>
-        <td class="mono">${fmt1(avg('currentStock'))}</td>
         <td class="mono">${avg('survivalRate') !== null ? fmt1(avg('survivalRate')) + '%' : '-'}</td>
       </tr>
     `;
