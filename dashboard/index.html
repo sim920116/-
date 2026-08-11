@@ -205,8 +205,6 @@
     white-space: nowrap;
   }
 
-  .stack-bar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
-  .stack-seg { height: 100%; position: relative; }
   .stack-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
   .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
@@ -339,16 +337,6 @@
   </div>
 
   <div class="chart-grid">
-    <div class="card wide">
-      <div class="card-head">
-        <div>
-          <p class="card-title">입식두수 결과 구성</p>
-          <p class="card-caption">형제파주농장 누적 입식두수 <span class="mono" id="totalEntryLabel">-</span>두의 현재 상태 비중</p>
-        </div>
-      </div>
-      <div id="stackChart" style="margin-top:6px;"></div>
-      <div class="stack-legend" id="stackLegend"></div>
-    </div>
     <div class="card wide">
       <div class="card-head">
         <div>
@@ -504,8 +492,6 @@ document.getElementById('kpiRow').innerHTML = kpis.map(k => `
   </div>
 `).join('');
 
-document.getElementById('totalEntryLabel').textContent = fmt(totalEntry);
-
 // ---------------- Tooltip ----------------
 const tooltipEl = document.getElementById('tooltip');
 function showTooltip(evt, html) {
@@ -529,37 +515,6 @@ function mortalityStatus(rate) {
   if (rate < 4) return 'good';
   if (rate < 7) return 'warning';
   return 'critical';
-}
-
-// ---------------- Outcome stacked bar ----------------
-function renderStackChart() {
-  const deaths = totalDeaths, sold = totalSold, stock = totalStock;
-  const total = deaths + sold + stock;
-  const segs = [
-    { key: 'stock', label: '현재 사육중', value: stock, color: 'var(--series-blue)' },
-    { key: 'sold', label: '출하(판매)', value: sold, color: 'var(--good)' },
-    { key: 'deaths', label: '폐사', value: deaths, color: 'var(--critical)' },
-  ];
-  const el = document.getElementById('stackChart');
-  el.innerHTML = `<div class="stack-bar">` + segs.map(s => {
-    const pct = s.value / total * 100;
-    return `<div class="stack-seg" data-key="${s.key}" style="width:${pct}%; background:${s.color}"></div>`;
-  }).join('<div style="width:2px;background:var(--surface)"></div>') + `</div>`;
-
-  el.querySelectorAll('.stack-seg').forEach(seg => {
-    const s = segs.find(x => x.key === seg.dataset.key);
-    const pct = s.value / total * 100;
-    seg.addEventListener('mousemove', e => showTooltip(e, `
-      <div><b>${s.label}</b></div>
-      <div class="t-row"><span>두수</span><span>${fmt(s.value)}두</span></div>
-      <div class="t-row"><span>비중</span><span>${fmt1(pct)}%</span></div>
-    `));
-    seg.addEventListener('mouseleave', hideTooltip);
-  });
-
-  document.getElementById('stackLegend').innerHTML = segs.map(s => `
-    <div class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.label} · ${fmt(s.value)}두 (${fmt1(s.value/total*100)}%)</div>
-  `).join('');
 }
 
 // ---------------- Stock/deaths/sold by age-in-months ----------------
@@ -796,7 +751,6 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
   });
 });
 
-renderStackChart();
 const AGE_BUCKETS = buildAgeBuckets();
 renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
 renderAgeMetricChart('ageSoldChart', 'ageSoldChartTable', AGE_BUCKETS, 'sold', 'var(--good)', '판매두수');
