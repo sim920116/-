@@ -233,6 +233,23 @@
   .mini-table th, .mini-table td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--border); }
   .mini-table th:first-child, .mini-table td:first-child { text-align: left; }
 
+  /* ---------- Event log tables ---------- */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .log-table th {
+    text-align: right; font-size: 11px; font-weight: 700; color: var(--muted);
+    padding: 7px 8px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+  }
+  .log-table th:first-child, .log-table th:nth-child(2) { text-align: left; }
+  .log-table td {
+    text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .log-table td:first-child, .log-table td:nth-child(2) { text-align: left; }
+  .log-table tbody tr:nth-child(even) td { background: var(--surface-inset); }
+  .log-table .avg-cell { color: var(--accent); font-weight: 700; }
+  .log-empty { padding: 18px 4px; text-align: center; color: var(--muted); font-size: 12.5px; }
+  .log-summary { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .log-summary b { color: var(--ink-soft); }
+
   /* ---------- Table ---------- */
   .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
   .table-card-head { padding: 16px 18px 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
@@ -361,6 +378,27 @@
     </div>
   </div>
 
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">일자별 폐사 기록</p>
+          <p class="card-caption">발생일 기준 · 그룹별 폐사 입력 내역</p>
+        </div>
+      </div>
+      <div id="mortalityLog"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">일자별 출하 기록</p>
+          <p class="card-caption">발생일 기준 · 두수·총중량으로 평균체중 자동 계산</p>
+        </div>
+      </div>
+      <div id="salesLog"></div>
+    </div>
+  </div>
+
   <div class="table-card">
     <div class="table-card-head">
       <div>
@@ -398,7 +436,7 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-const RECORDS = [{"farm": "형제파주", "group": "형제파주-형제파주-2026-006", "category": "비육돈", "location": "B026", "entryDate": "2026-05-05", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 22.1, "initialCount": 324, "claim": 0, "currentAgeDays": 168, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-007", "category": "비육돈", "location": "B026", "entryDate": "2026-05-19", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 149, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-008", "category": "비육돈", "location": "B026", "entryDate": "2026-06-02", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.2, "initialCount": 324, "claim": 0, "currentAgeDays": 135, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-009", "category": "비육돈", "location": "B026", "entryDate": "2026-06-16", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.6, "initialCount": 324, "claim": 0, "currentAgeDays": 121, "deaths": 13, "sold": 20, "currentStock": 291, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-010", "category": "비육돈", "location": "B026", "entryDate": "2026-06-30", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 324, "claim": 0, "currentAgeDays": 112, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-011", "category": "비육돈", "location": "B026", "entryDate": "2026-07-14", "entryCount": 324, "entryAgeDays": 62.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 90, "deaths": 11, "sold": 0, "currentStock": 313, "survivalRate": 96.6, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)"}];
+const RECORDS = [{"farm": "형제파주", "group": "형제파주-형제파주-2026-006", "category": "비육돈", "location": "B026", "entryDate": "2026-05-05", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 22.1, "initialCount": 324, "claim": 0, "currentAgeDays": 168, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-007", "category": "비육돈", "location": "B026", "entryDate": "2026-05-19", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 149, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-008", "category": "비육돈", "location": "B026", "entryDate": "2026-06-02", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.2, "initialCount": 324, "claim": 0, "currentAgeDays": 135, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-009", "category": "비육돈", "location": "B026", "entryDate": "2026-06-16", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.6, "initialCount": 324, "claim": 0, "currentAgeDays": 121, "deaths": 13, "sold": 20, "currentStock": 291, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": [{"date": "2026-08-11", "count": 20, "weightKg": 2200}]}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-010", "category": "비육돈", "location": "B026", "entryDate": "2026-06-30", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 324, "claim": 0, "currentAgeDays": 112, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-011", "category": "비육돈", "location": "B026", "entryDate": "2026-07-14", "entryCount": 324, "entryAgeDays": 62.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 90, "deaths": 11, "sold": 0, "currentStock": 313, "survivalRate": 96.6, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [{"date": "2026-08-11", "count": 1}], "salesEvents": []}];
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
 const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
@@ -582,6 +620,49 @@ function renderStackChart() {
   `).join('');
 }
 
+// ---------------- Daily mortality log ----------------
+function renderMortalityLog() {
+  const events = [];
+  RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => events.push({ ...ev, group: r.group })));
+  events.sort((a, b) => b.date.localeCompare(a.date));
+
+  const el = document.getElementById('mortalityLog');
+  if (events.length === 0) {
+    el.innerHTML = `<div class="log-empty">아직 일자별로 기록된 폐사 내역이 없습니다. "○그룹 폐사 ○두, ○월 ○일" 형태로 알려주시면 여기에 기록됩니다.</div>`;
+    return;
+  }
+  const totalCount = events.reduce((s, e) => s + e.count, 0);
+  el.innerHTML = `
+    <table class="log-table">
+      <thead><tr><th>날짜</th><th>그룹</th><th>폐사두수</th></tr></thead>
+      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="log-summary">기록된 폐사 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두</b></div>
+  `;
+}
+
+// ---------------- Daily sales log ----------------
+function renderSalesLog() {
+  const events = [];
+  RECORDS.forEach(r => (r.salesEvents || []).forEach(ev => events.push({ ...ev, group: r.group, avgWeight: ev.weightKg / ev.count })));
+  events.sort((a, b) => b.date.localeCompare(a.date));
+
+  const el = document.getElementById('salesLog');
+  if (events.length === 0) {
+    el.innerHTML = `<div class="log-empty">아직 일자별로 기록된 출하 내역이 없습니다. "○그룹 출하 ○두, 총중량 ○kg, ○월 ○일" 형태로 알려주시면 평균체중을 계산해서 기록합니다.</div>`;
+    return;
+  }
+  const totalCount = events.reduce((s, e) => s + e.count, 0);
+  const totalWeight = events.reduce((s, e) => s + e.weightKg, 0);
+  el.innerHTML = `
+    <table class="log-table">
+      <thead><tr><th>날짜</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th></tr></thead>
+      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="log-summary">기록된 출하 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 전체 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b></div>
+  `;
+}
+
 // ---------------- Filters + Table ----------------
 const state = { status: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
 
@@ -671,5 +752,7 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
 renderMortalityChart();
 renderMonthChart();
 renderStackChart();
+renderMortalityLog();
+renderSalesLog();
 renderTable();
 </script>
