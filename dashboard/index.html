@@ -320,7 +320,7 @@
   .tab-panel.active { display: block; }
 
   /* ---------- Comparison table ---------- */
-  .compare-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 640px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
   .compare-table th {
     text-align: left; font-size: 11px; font-weight: 700; color: var(--muted);
     padding: 9px 10px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
@@ -474,6 +474,8 @@
               <th>사육비 형태</th>
               <th>사육비 금액</th>
               <th>비고</th>
+              <th>출하체중</th>
+              <th>대여금 내용</th>
             </tr>
           </thead>
           <tbody id="competitorBody"></tbody>
@@ -497,19 +499,33 @@ const COMPETITORS = [
     "name": "보람",
     "type": "최저 출하두당, 규모두당",
     "amount": "최대 75,000원 가능",
-    "note": "최저 출하두당시 농장 사양관리 이점부분 인센티브 UP, 단점부분 X로 사육비 재설계"
+    "note": "최저 출하두당시 농장 사양관리 이점부분 인센티브 UP, 단점부분 X로 사육비 재설계",
+    "weight": "본장에 따라 편차 심함",
+    "loan": "무이자 지원"
   },
   {
     "name": "4대법인(진왕,도뜰,모전,매산)",
     "type": "규모두당, 전입두당",
     "amount": "규모두당 56~57,000원, 전입두당 60,000원",
-    "note": null
+    "note": null,
+    "weight": "110~115kg",
+    "loan": "무이자 지원"
   },
   {
     "name": "디허스코리아(舊CJ)",
     "type": "최저 출하두당, 규모두당",
     "amount": "규모두당 56,000원, 출하두당 최저 58,000~72,000원",
-    "note": "최저 출하두당 지육율 77% 이상 0.1%당 300원 최대 3,000원, 등급율 70%이상시 1,500원"
+    "note": "최저 출하두당 지육율 77% 이상 0.1%당 300원 최대 3,000원, 등급율 70%이상시 1,500원 등",
+    "weight": "110~113kg",
+    "loan": "당사와 큰차이 없음"
+  },
+  {
+    "name": "팜스월드",
+    "type": "전입두당, 규모두당, 최저 출하두당",
+    "amount": "전입두당 58,000원, 규모두당 56,000원, 출하두당 최저사육비",
+    "note": null,
+    "weight": "110~113kg, 질병 및 이슈상황 발생시 저체중 출하진행",
+    "loan": null
   }
 ]
 ;
@@ -843,6 +859,8 @@ function renderCompetitorTable() {
       <td>${c.type}</td>
       <td class="co-amount">${c.amount}</td>
       <td>${c.note || '-'}</td>
+      <td>${c.weight || '-'}</td>
+      <td>${c.loan || '-'}</td>
     </tr>
   `).join('');
 }
