@@ -485,7 +485,7 @@
   </div>
 
   <div class="footer">
-    <span>출처: 업로드된 사육현황 원본 데이터 중 실험농장(위치 B026) 6개 배치, 경쟁사 사육비 비교 자료</span>
+    <span>출처: 업로드된 사육현황 원본 데이터 중 실험농장 6개 배치, 경쟁사 사육비 비교 자료</span>
     <span id="generatedAt"></span>
   </div>
 </div>
@@ -550,7 +550,6 @@ document.getElementById('generatedAt').textContent = '생성: ' + new Date().toI
 // ---------------- Farm info strip ----------------
 const ref = RECORDS[0];
 const farmInfo = [
-  { label: '저장위치', value: ref.location || '-' },
   { label: '사육 돈사구분', value: ref.category },
   { label: '번식/자돈 공급농장', value: ref.breedFarm || '-' },
 ];
