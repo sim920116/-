@@ -305,6 +305,30 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
+
+  /* ---------- Tabs ---------- */
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    padding: 10px 6px; margin-bottom: -1px; margin-right: 18px;
+    border: none; background: none; font-family: inherit; font-weight: 700; font-size: 13.5px;
+    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---------- Comparison table ---------- */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 640px; }
+  .compare-table th {
+    text-align: left; font-size: 11px; font-weight: 700; color: var(--muted);
+    padding: 9px 10px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+  }
+  .compare-table td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
+  .compare-table tbody tr:nth-child(even) td { background: var(--surface-inset); }
+  .compare-table .co-name { font-weight: 700; white-space: nowrap; }
+  .compare-table .co-amount { color: var(--accent); font-weight: 600; }
 </style>
 
 <div class="dash">
@@ -319,6 +343,12 @@
     </div>
   </div>
 
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="farm">사육현황</button>
+    <button class="tab-btn" data-tab="competitor">경쟁사 사육비 비교</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-farm">
   <div class="farm-info" id="farmInfo"></div>
 
   <div class="kpi-row" id="kpiRow"></div>
@@ -426,9 +456,34 @@
       <div id="salesLog"></div>
     </div>
   </div>
+  </div>
+
+  <div class="tab-panel" id="tab-competitor">
+    <div class="table-card">
+      <div class="table-card-head">
+        <div>
+          <p class="card-title" style="margin-bottom:0">경쟁사 사육비 비교</p>
+          <p class="card-caption" style="margin-bottom:0">업로드 자료 기준 · 계약 형태별 사육비 비교</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="compare-table" id="competitorTable">
+          <thead>
+            <tr>
+              <th>경쟁사명</th>
+              <th>사육비 형태</th>
+              <th>사육비 금액</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody id="competitorBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
   <div class="footer">
-    <span>출처: 업로드된 사육현황 원본 데이터 중 형제파주농장(위치 B026) 6개 배치</span>
+    <span>출처: 업로드된 사육현황 원본 데이터 중 형제파주농장(위치 B026) 6개 배치, 경쟁사 사육비 비교 자료</span>
     <span id="generatedAt"></span>
   </div>
 </div>
@@ -437,6 +492,27 @@
 
 <script>
 const RECORDS = [{"farm": "형제파주", "group": "형제파주-형제파주-2026-006", "category": "비육돈", "location": "B026", "entryDate": "2026-05-05", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 22.1, "initialCount": 324, "claim": 0, "currentAgeDays": 168, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-007", "category": "비육돈", "location": "B026", "entryDate": "2026-05-19", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 149, "deaths": 16, "sold": 0, "currentStock": 308, "survivalRate": 95.1, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-008", "category": "비육돈", "location": "B026", "entryDate": "2026-06-02", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.2, "initialCount": 324, "claim": 0, "currentAgeDays": 135, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-009", "category": "비육돈", "location": "B026", "entryDate": "2026-06-16", "entryCount": 324, "entryAgeDays": 65.0, "weightPerHead": 24.6, "initialCount": 324, "claim": 0, "currentAgeDays": 121, "deaths": 13, "sold": 20, "currentStock": 291, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": [{"date": "2026-08-11", "count": 20, "weightKg": 2200}]}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-010", "category": "비육돈", "location": "B026", "entryDate": "2026-06-30", "entryCount": 324, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 324, "claim": 0, "currentAgeDays": 112, "deaths": 13, "sold": 0, "currentStock": 311, "survivalRate": 96.0, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [], "salesEvents": []}, {"farm": "형제파주", "group": "형제파주-형제파주-2026-011", "category": "비육돈", "location": "B026", "entryDate": "2026-07-14", "entryCount": 324, "entryAgeDays": 62.0, "weightPerHead": 24.3, "initialCount": 324, "claim": 0, "currentAgeDays": 90, "deaths": 11, "sold": 0, "currentStock": 313, "survivalRate": 96.6, "breedFarm": "인티-변산농장(박태진)", "pigletFarm": "인티-변산농장(박태진)", "mortalityEvents": [{"date": "2026-08-11", "count": 1}], "salesEvents": []}];
+const COMPETITORS = [
+  {
+    "name": "보람",
+    "type": "최저 출하두당, 규모두당",
+    "amount": "최대 75,000원 가능",
+    "note": "최저 출하두당시 농장 사양관리 이점부분 인센티브 UP, 단점부분 X로 사육비 재설계"
+  },
+  {
+    "name": "4대법인(진왕,도뜰,모전,매산)",
+    "type": "규모두당, 전입두당",
+    "amount": "규모두당 56~57,000원, 전입두당 60,000원",
+    "note": null
+  },
+  {
+    "name": "디허스코리아(舊CJ)",
+    "type": "최저 출하두당, 규모두당",
+    "amount": "규모두당 56,000원, 출하두당 최저 58,000~72,000원",
+    "note": "최저 출하두당 지육율 77% 이상 0.1%당 300원 최대 3,000원, 등급율 70%이상시 1,500원"
+  }
+]
+;
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
 const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
@@ -750,6 +826,27 @@ document.querySelectorAll('.toggle-table').forEach(btn => {
     btn.textContent = show ? '차트로 보기' : '표로 보기';
   });
 });
+
+// ---------------- Tabs ----------------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + btn.dataset.tab));
+  });
+});
+
+// ---------------- Competitor cost comparison ----------------
+function renderCompetitorTable() {
+  document.getElementById('competitorBody').innerHTML = COMPETITORS.map(c => `
+    <tr>
+      <td class="co-name">${c.name}</td>
+      <td>${c.type}</td>
+      <td class="co-amount">${c.amount}</td>
+      <td>${c.note || '-'}</td>
+    </tr>
+  `).join('');
+}
+renderCompetitorTable();
 
 const AGE_BUCKETS = buildAgeBuckets();
 renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
