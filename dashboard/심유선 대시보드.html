@@ -529,6 +529,18 @@ const COMPETITORS = [
   }
 ]
 ;
+const EXTRA_MORTALITY_EVENTS = []
+;
+const EXTRA_SALES_EVENTS = [
+  {
+    "date": "2026-08-24",
+    "farm": "인티-삼정(안형식)",
+    "group": null,
+    "count": 64,
+    "weightKg": 7450
+  }
+]
+;
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
 const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
@@ -689,7 +701,8 @@ function renderAgeMortalityChart(buckets) {
 // ---------------- Daily mortality log ----------------
 function renderMortalityLog() {
   const events = [];
-  RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => events.push({ ...ev, group: r.group })));
+  RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => events.push({ ...ev, farm: r.farm, group: r.group })));
+  (EXTRA_MORTALITY_EVENTS || []).forEach(ev => events.push({ ...ev, group: ev.group || '-' }));
   events.sort((a, b) => b.date.localeCompare(a.date));
 
   const el = document.getElementById('mortalityLog');
@@ -700,8 +713,8 @@ function renderMortalityLog() {
   const totalCount = events.reduce((s, e) => s + e.count, 0);
   el.innerHTML = `
     <table class="log-table">
-      <thead><tr><th>날짜</th><th>그룹</th><th>폐사두수</th></tr></thead>
-      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td></tr>`).join('')}</tbody>
+      <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>폐사두수</th></tr></thead>
+      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td></tr>`).join('')}</tbody>
     </table>
     <div class="log-summary">기록된 폐사 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두</b></div>
   `;
@@ -710,7 +723,8 @@ function renderMortalityLog() {
 // ---------------- Daily sales log ----------------
 function renderSalesLog() {
   const events = [];
-  RECORDS.forEach(r => (r.salesEvents || []).forEach(ev => events.push({ ...ev, group: r.group, avgWeight: ev.weightKg / ev.count })));
+  RECORDS.forEach(r => (r.salesEvents || []).forEach(ev => events.push({ ...ev, farm: r.farm, group: r.group, avgWeight: ev.weightKg / ev.count })));
+  (EXTRA_SALES_EVENTS || []).forEach(ev => events.push({ ...ev, group: ev.group || '-', avgWeight: ev.weightKg / ev.count }));
   events.sort((a, b) => b.date.localeCompare(a.date));
 
   const el = document.getElementById('salesLog');
@@ -722,8 +736,8 @@ function renderSalesLog() {
   const totalWeight = events.reduce((s, e) => s + e.weightKg, 0);
   el.innerHTML = `
     <table class="log-table">
-      <thead><tr><th>날짜</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th></tr></thead>
-      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td></tr>`).join('')}</tbody>
+      <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th></tr></thead>
+      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td></tr>`).join('')}</tbody>
     </table>
     <div class="log-summary">기록된 출하 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 전체 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b></div>
   `;
