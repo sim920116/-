@@ -448,6 +448,7 @@
           <p class="card-title" style="margin-bottom:0">출하 세부내역</p>
           <p class="card-caption" style="margin-bottom:0">발생일 기준 · 두수·총중량으로 평균체중 자동 계산 · 지육율·1등급율 포함</p>
         </div>
+        <input class="search-input" id="salesFarmSearch" type="text" placeholder="농장명 검색" />
       </div>
       <div style="padding: 16px 18px 18px;">
         <div id="salesLog"></div>
@@ -462,6 +463,7 @@
           <p class="card-title" style="margin-bottom:0">폐사 세부내역</p>
           <p class="card-caption" style="margin-bottom:0">발생일 기준 · 농장·그룹별 폐사 입력 내역</p>
         </div>
+        <input class="search-input" id="mortalityFarmSearch" type="text" placeholder="농장명 검색" />
       </div>
       <div style="padding: 16px 18px 18px;">
         <div id="mortalityLog"></div>
@@ -710,15 +712,24 @@ function renderAgeMortalityChart(buckets) {
 }
 
 // ---------------- Daily mortality log ----------------
+let mortalityFarmSearch = '';
+
 function renderMortalityLog() {
-  const events = [];
-  RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => events.push({ ...ev, farm: r.farm, group: r.group })));
-  (EXTRA_MORTALITY_EVENTS || []).forEach(ev => events.push({ ...ev, group: ev.group || '-' }));
-  events.sort((a, b) => b.date.localeCompare(a.date));
+  const allEvents = [];
+  RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => allEvents.push({ ...ev, farm: r.farm, group: r.group })));
+  (EXTRA_MORTALITY_EVENTS || []).forEach(ev => allEvents.push({ ...ev, group: ev.group || '-' }));
+  allEvents.sort((a, b) => b.date.localeCompare(a.date));
+
+  const q = mortalityFarmSearch.trim().toLowerCase();
+  const events = q ? allEvents.filter(e => e.farm.toLowerCase().includes(q)) : allEvents;
 
   const el = document.getElementById('mortalityLog');
-  if (events.length === 0) {
+  if (allEvents.length === 0) {
     el.innerHTML = `<div class="log-empty">아직 일자별로 기록된 폐사 내역이 없습니다. "○그룹 폐사 ○두, ○월 ○일" 형태로 알려주시면 여기에 기록됩니다.</div>`;
+    return;
+  }
+  if (events.length === 0) {
+    el.innerHTML = `<div class="log-empty">"${mortalityFarmSearch}" 농장의 폐사 기록이 없습니다.</div>`;
     return;
   }
   const totalCount = events.reduce((s, e) => s + e.count, 0);
@@ -727,20 +738,33 @@ function renderMortalityLog() {
       <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>폐사두수</th></tr></thead>
       <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td></tr>`).join('')}</tbody>
     </table>
-    <div class="log-summary">기록된 폐사 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두</b></div>
+    <div class="log-summary">${q ? `"${mortalityFarmSearch}" 검색 결과 ` : '기록된 폐사 '}<b>${events.length}</b>건${q ? ` (전체 ${allEvents.length}건)` : ''} · 합계 <b>${fmt(totalCount)}두</b></div>
   `;
 }
+document.getElementById('mortalityFarmSearch').addEventListener('input', e => {
+  mortalityFarmSearch = e.target.value;
+  renderMortalityLog();
+});
 
 // ---------------- Daily sales log ----------------
+let salesFarmSearch = '';
+
 function renderSalesLog() {
-  const events = [];
-  RECORDS.forEach(r => (r.salesEvents || []).forEach(ev => events.push({ ...ev, farm: r.farm, group: r.group, avgWeight: ev.weightKg / ev.count })));
-  (EXTRA_SALES_EVENTS || []).forEach(ev => events.push({ ...ev, group: ev.group || '-', avgWeight: ev.weightKg / ev.count }));
-  events.sort((a, b) => b.date.localeCompare(a.date));
+  const allEvents = [];
+  RECORDS.forEach(r => (r.salesEvents || []).forEach(ev => allEvents.push({ ...ev, farm: r.farm, group: r.group, avgWeight: ev.weightKg / ev.count })));
+  (EXTRA_SALES_EVENTS || []).forEach(ev => allEvents.push({ ...ev, group: ev.group || '-', avgWeight: ev.weightKg / ev.count }));
+  allEvents.sort((a, b) => b.date.localeCompare(a.date));
+
+  const q = salesFarmSearch.trim().toLowerCase();
+  const events = q ? allEvents.filter(e => e.farm.toLowerCase().includes(q)) : allEvents;
 
   const el = document.getElementById('salesLog');
-  if (events.length === 0) {
+  if (allEvents.length === 0) {
     el.innerHTML = `<div class="log-empty">아직 일자별로 기록된 출하 내역이 없습니다. "○그룹 출하 ○두, 총중량 ○kg, ○월 ○일" 형태로 알려주시면 평균체중을 계산해서 기록합니다.</div>`;
+    return;
+  }
+  if (events.length === 0) {
+    el.innerHTML = `<div class="log-empty">"${salesFarmSearch}" 농장의 출하 기록이 없습니다.</div>`;
     return;
   }
   const totalCount = events.reduce((s, e) => s + e.count, 0);
@@ -755,9 +779,13 @@ function renderSalesLog() {
       <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th><th>지육율</th><th>1등급율</th></tr></thead>
       <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td>${rateCell(e.dressingRate, 77)}${rateCell(e.gradeARate, 70)}</tr>`).join('')}</tbody>
     </table>
-    <div class="log-summary">기록된 출하 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 전체 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b> · 지육율 77% 이상/1등급율 70% 이상은 강조 표시</div>
+    <div class="log-summary">${q ? `"${salesFarmSearch}" 검색 결과 ` : '기록된 출하 '}<b>${events.length}</b>건${q ? ` (전체 ${allEvents.length}건)` : ''} · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b> · 지육율 77% 이상/1등급율 70% 이상은 강조 표시</div>
   `;
 }
+document.getElementById('salesFarmSearch').addEventListener('input', e => {
+  salesFarmSearch = e.target.value;
+  renderSalesLog();
+});
 
 // ---------------- Filters + Table ----------------
 const state = { status: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
