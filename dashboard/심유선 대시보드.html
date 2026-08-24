@@ -237,6 +237,7 @@
   .log-table td:first-child, .log-table td:nth-child(2) { text-align: left; }
   .log-table tbody tr:nth-child(even) td { background: var(--surface-inset); }
   .log-table .avg-cell { color: var(--accent); font-weight: 700; }
+  .log-table .rate-good { color: var(--good); font-weight: 700; }
   .log-empty { padding: 18px 4px; text-align: center; color: var(--muted); font-size: 12.5px; }
   .log-summary { margin-top: 8px; font-size: 12px; color: var(--muted); }
   .log-summary b { color: var(--ink-soft); }
@@ -445,7 +446,7 @@
       <div class="table-card-head">
         <div>
           <p class="card-title" style="margin-bottom:0">출하 세부내역</p>
-          <p class="card-caption" style="margin-bottom:0">발생일 기준 · 두수·총중량으로 평균체중 자동 계산</p>
+          <p class="card-caption" style="margin-bottom:0">발생일 기준 · 두수·총중량으로 평균체중 자동 계산 · 지육율·1등급율 포함</p>
         </div>
       </div>
       <div style="padding: 16px 18px 18px;">
@@ -744,12 +745,17 @@ function renderSalesLog() {
   }
   const totalCount = events.reduce((s, e) => s + e.count, 0);
   const totalWeight = events.reduce((s, e) => s + e.weightKg, 0);
+  const rateCell = (value, threshold) => {
+    if (value === null || value === undefined) return '<td class="mono">-</td>';
+    const cls = value >= threshold ? 'rate-good' : 'mono';
+    return `<td class="mono ${cls}">${value.toFixed(1)}%</td>`;
+  };
   el.innerHTML = `
     <table class="log-table">
-      <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th></tr></thead>
-      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td></tr>`).join('')}</tbody>
+      <thead><tr><th>날짜</th><th>농장</th><th>그룹</th><th>출하두수</th><th>총중량</th><th>평균체중</th><th>지육율</th><th>1등급율</th></tr></thead>
+      <tbody>${events.map(e => `<tr><td class="mono">${e.date}</td><td>${e.farm}</td><td class="mono">${e.group}</td><td class="mono">${fmt(e.count)}두</td><td class="mono">${fmt(e.weightKg)}kg</td><td class="mono avg-cell">${e.avgWeight.toFixed(1)}kg</td>${rateCell(e.dressingRate, 77)}${rateCell(e.gradeARate, 70)}</tr>`).join('')}</tbody>
     </table>
-    <div class="log-summary">기록된 출하 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 전체 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b></div>
+    <div class="log-summary">기록된 출하 <b>${events.length}</b>건 · 합계 <b>${fmt(totalCount)}두 · ${fmt(totalWeight)}kg</b> · 전체 평균체중 <b>${(totalWeight/totalCount).toFixed(1)}kg</b> · 지육율 77% 이상/1등급율 70% 이상은 강조 표시</div>
   `;
 }
 
