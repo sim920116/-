@@ -185,6 +185,21 @@
     cursor: pointer; padding: 2px 0; font-family: inherit; text-decoration: underline; text-underline-offset: 2px;
     white-space: nowrap;
   }
+  .add-row-btn {
+    background: var(--accent); border: none; color: var(--accent-ink); font-size: 12px; font-weight: 700;
+    cursor: pointer; padding: 7px 14px; border-radius: 7px; font-family: inherit; white-space: nowrap;
+  }
+  .add-row-btn:hover { background: var(--accent-strong); }
+  #ledgerBody td[contenteditable="true"] {
+    background: var(--accent-soft); cursor: text; border-radius: 3px;
+  }
+  #ledgerBody td[contenteditable="true"]:focus {
+    outline: 2px solid var(--accent); outline-offset: -2px; background: var(--surface);
+  }
+  tr.new-row td:first-child::before {
+    content: '신규'; display: inline-block; font-size: 9.5px; font-weight: 800; color: var(--accent-ink);
+    background: var(--accent); border-radius: 3px; padding: 1px 5px; margin-right: 6px; vertical-align: middle;
+  }
 
   .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
   .bar-row:last-child { margin-bottom: 0; }
@@ -370,8 +385,9 @@
     <div class="table-card-head">
       <div>
         <p class="card-title" style="margin-bottom:0">배치별 상세 현황</p>
-        <p class="card-caption" style="margin-bottom:0">실험농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬</p>
+        <p class="card-caption" style="margin-bottom:0">실험농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬 · 셀 클릭해 신규 배치 값 입력</p>
       </div>
+      <button class="add-row-btn" id="addRowBtn">+ 새 배치 추가</button>
     </div>
     <div class="table-scroll">
       <table class="ledger" id="ledgerTable">
@@ -541,6 +557,10 @@ const EXTRA_SALES_EVENTS = [
   }
 ]
 ;
+
+RECORDS.forEach((r, i) => { r._uid = i; });
+let nextUid = RECORDS.length;
+const editableUids = new Set();
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
 const fmt1 = n => n === null || n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1);
@@ -774,6 +794,21 @@ function renderTable() {
   } else {
     body.innerHTML = rows.map(r => {
       const st = statusOf(r.survivalRate);
+      if (editableUids.has(r._uid)) {
+        const editCell = key => `<td class="mono" contenteditable="true" data-uid="${r._uid}" data-key="${key}">${r[key] ?? ''}</td>`;
+        return `<tr class="new-row" data-uid="${r._uid}">
+          ${editCell('group')}
+          ${editCell('entryDate')}
+          ${editCell('entryAgeDays')}
+          ${editCell('weightPerHead')}
+          ${editCell('entryCount')}
+          ${editCell('currentAgeDays')}
+          ${editCell('deaths')}
+          ${editCell('sold')}
+          <td class="mono">${fmt(r.currentStock)}</td>
+          <td>${st ? `<span class="status-chip st-${st}"><span class="status-dot st-${st}"></span>${fmt1(r.survivalRate)}%</span>` : '-'}</td>
+        </tr>`;
+      }
       return `<tr>
         <td class="farm-cell mono">${r.group}</td>
         <td class="mono">${r.entryDate}</td>
@@ -844,6 +879,39 @@ document.querySelectorAll('#ledgerTable thead th').forEach(th => {
     renderTable();
   });
 });
+const NUMERIC_KEYS = new Set(['entryAgeDays', 'weightPerHead', 'entryCount', 'currentAgeDays', 'deaths', 'sold']);
+
+document.getElementById('addRowBtn').addEventListener('click', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const uid = nextUid++;
+  RECORDS.push({
+    farm: '신규농장', group: `신규농장-배치-${uid}`, category: '비육돈', location: '',
+    entryDate: today, entryAgeDays: 0, weightPerHead: 0, entryCount: 0, initialCount: 0, claim: 0,
+    currentAgeDays: 0, deaths: 0, sold: 0, currentStock: 0, survivalRate: null,
+    breedFarm: '', pigletFarm: '', mortalityEvents: [], salesEvents: [], _uid: uid,
+  });
+  editableUids.add(uid);
+  state.sortKey = 'entryDate';
+  state.sortDir = 'desc';
+  renderTable();
+  const firstCell = document.querySelector(`#ledgerBody td[data-uid="${uid}"][data-key="group"]`);
+  if (firstCell) firstCell.focus();
+});
+
+document.getElementById('ledgerBody').addEventListener('focusout', e => {
+  const cell = e.target;
+  if (!cell.matches('td[contenteditable="true"]')) return;
+  const uid = Number(cell.dataset.uid);
+  const key = cell.dataset.key;
+  const record = RECORDS.find(r => r._uid === uid);
+  if (!record) return;
+  const raw = cell.textContent.trim();
+  record[key] = NUMERIC_KEYS.has(key) ? (raw === '' ? 0 : Number(raw.replace(/[^0-9.-]/g, '')) || 0) : raw;
+  record.currentStock = record.entryCount - record.deaths - record.sold;
+  record.survivalRate = record.entryCount > 0 ? record.currentStock / record.entryCount * 100 : null;
+  renderTable();
+});
+
 document.querySelectorAll('.toggle-table').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = document.getElementById(btn.dataset.target);
