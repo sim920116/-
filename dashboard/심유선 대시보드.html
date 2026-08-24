@@ -345,6 +345,8 @@
 
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="farm">사육현황</button>
+    <button class="tab-btn" data-tab="sales">출하 세부내역</button>
+    <button class="tab-btn" data-tab="mortality">폐사 세부내역</button>
     <button class="tab-btn" data-tab="competitor">경쟁사 사육비 비교</button>
   </div>
 
@@ -436,26 +438,34 @@
     </div>
   </div>
 
-  <div class="chart-grid">
-    <div class="card">
-      <div class="card-head">
+  </div>
+
+  <div class="tab-panel" id="tab-sales">
+    <div class="table-card">
+      <div class="table-card-head">
         <div>
-          <p class="card-title">일자별 폐사 기록</p>
-          <p class="card-caption">발생일 기준 · 그룹별 폐사 입력 내역</p>
+          <p class="card-title" style="margin-bottom:0">출하 세부내역</p>
+          <p class="card-caption" style="margin-bottom:0">발생일 기준 · 두수·총중량으로 평균체중 자동 계산</p>
         </div>
       </div>
-      <div id="mortalityLog"></div>
-    </div>
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <p class="card-title">일자별 출하 기록</p>
-          <p class="card-caption">발생일 기준 · 두수·총중량으로 평균체중 자동 계산</p>
-        </div>
+      <div style="padding: 16px 18px 18px;">
+        <div id="salesLog"></div>
       </div>
-      <div id="salesLog"></div>
     </div>
   </div>
+
+  <div class="tab-panel" id="tab-mortality">
+    <div class="table-card">
+      <div class="table-card-head">
+        <div>
+          <p class="card-title" style="margin-bottom:0">폐사 세부내역</p>
+          <p class="card-caption" style="margin-bottom:0">발생일 기준 · 농장·그룹별 폐사 입력 내역</p>
+        </div>
+      </div>
+      <div style="padding: 16px 18px 18px;">
+        <div id="mortalityLog"></div>
+      </div>
+    </div>
   </div>
 
   <div class="tab-panel" id="tab-competitor">
