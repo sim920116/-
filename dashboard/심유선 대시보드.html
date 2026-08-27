@@ -349,6 +349,7 @@
     <button class="tab-btn" data-tab="sales">출하 세부내역</button>
     <button class="tab-btn" data-tab="mortality">폐사 세부내역</button>
     <button class="tab-btn" data-tab="competitor">경쟁사 사육비 비교</button>
+    <button class="tab-btn" data-tab="newfarms">신규농장 현황</button>
   </div>
 
   <div class="tab-panel active" id="tab-farm">
@@ -497,6 +498,36 @@
     </div>
   </div>
 
+  <div class="tab-panel" id="tab-newfarms">
+    <div class="table-card">
+      <div class="table-card-head">
+        <div>
+          <p class="card-title" style="margin-bottom:0">신규농장 현황</p>
+          <p class="card-caption" style="margin-bottom:0">비육계열사업부 신규 거래처 발굴 현황 · 업데이트 <span class="mono" id="newFarmsUpdatedAt">-</span></p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="compare-table" id="newFarmsTable">
+          <thead>
+            <tr>
+              <th>담당자</th>
+              <th>지역</th>
+              <th>농가명</th>
+              <th>사육두수</th>
+              <th>돈사 정보</th>
+              <th>현거래처</th>
+              <th>현 사육비 수준</th>
+              <th>대여금 등</th>
+              <th>거래가능성</th>
+              <th>거래가능일 / 비고</th>
+            </tr>
+          </thead>
+          <tbody id="newFarmsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="footer">
     <span>출처: 업로드된 사육현황 원본 데이터 중 실험농장 6개 배치, 경쟁사 사육비 비교 자료</span>
     <span id="generatedAt"></span>
@@ -553,6 +584,162 @@ const EXTRA_SALES_EVENTS = [
     "weightKg": 7450
   }
 ]
+;
+const NEW_FARMS = {
+  "updatedAt": "2026-08-27",
+  "rows": [
+    {
+      "manager": "권영제",
+      "region": "이천",
+      "farm": "매일(유병철)",
+      "headcount": 2200,
+      "buildings": 4,
+      "floor": "반슬러리",
+      "ventilation": "무창",
+      "currentBuyer": "선진한마을",
+      "costLevel": "기존capa 2,200두 / 동물복지 1,860두, 출하두당 78,000원(동물복지) 수준, 정산제 선호",
+      "loan": "없음",
+      "dealProb": 0.5,
+      "dealDate": "10월",
+      "note": null
+    },
+    {
+      "manager": "권영제",
+      "region": "철원",
+      "farm": "돈돈팜스(박종엽)",
+      "headcount": 3000,
+      "buildings": 3,
+      "floor": "슬러리",
+      "ventilation": "무창",
+      "currentBuyer": "화순/매입",
+      "costLevel": "출하두당 53,000원, 사료인센 약 4,000원",
+      "loan": "없음",
+      "dealProb": 0.7,
+      "dealDate": "9월 말",
+      "note": null
+    },
+    {
+      "manager": "권영제",
+      "region": "포천",
+      "farm": "백용인",
+      "headcount": 850,
+      "buildings": 3,
+      "floor": "평사/반슬러리",
+      "ventilation": "윈치",
+      "currentBuyer": "금오영농",
+      "costLevel": "출하두당 53,000원",
+      "loan": "없음",
+      "dealProb": 0.3,
+      "dealDate": "확인 중",
+      "note": null
+    },
+    {
+      "manager": "권영제",
+      "region": "파주",
+      "farm": "지은(이창용)",
+      "headcount": 1200,
+      "buildings": 4,
+      "floor": "반슬러리",
+      "ventilation": "무창",
+      "currentBuyer": "개인",
+      "costLevel": "출하두당 53,000원",
+      "loan": "무이자 2억, 기존 업체 대환",
+      "dealProb": 0.3,
+      "dealDate": "11월",
+      "note": null
+    },
+    {
+      "manager": "권영제",
+      "region": "포천",
+      "farm": "현대(김정례)",
+      "headcount": 2000,
+      "buildings": 8,
+      "floor": "반슬러리",
+      "ventilation": "무창",
+      "currentBuyer": "개인",
+      "costLevel": "출하두당 53,000원",
+      "loan": "임대/대여금 확인 중",
+      "dealProb": 0.3,
+      "dealDate": "9월 초",
+      "note": null
+    },
+    {
+      "manager": "권영제",
+      "region": "용인",
+      "farm": "민우(김종식)",
+      "headcount": 1000,
+      "buildings": 6,
+      "floor": "톱밥",
+      "ventilation": "윈치",
+      "currentBuyer": "선진한마을",
+      "costLevel": "규모 48,000원 계약조건 만료, 기존capa 1,000두 / 동물복지 800두, 규모 57,000원",
+      "loan": "없음",
+      "dealProb": 0.7,
+      "dealDate": "확인 중",
+      "note": null
+    },
+    {
+      "manager": "심유선",
+      "region": "안성",
+      "farm": "달우물농장",
+      "headcount": 1300,
+      "buildings": null,
+      "floor": null,
+      "ventilation": null,
+      "currentBuyer": null,
+      "costLevel": null,
+      "loan": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "8/28 오후 1시 미팅 후 파악"
+    },
+    {
+      "manager": "심유선",
+      "region": "이천",
+      "farm": "하나농장",
+      "headcount": 1500,
+      "buildings": null,
+      "floor": null,
+      "ventilation": null,
+      "currentBuyer": null,
+      "costLevel": null,
+      "loan": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "8/28 오후 3시 미팅 후 파악"
+    },
+    {
+      "manager": "심유선",
+      "region": "옥천",
+      "farm": "요셉농장",
+      "headcount": 1000,
+      "buildings": 2,
+      "floor": "톱밥",
+      "ventilation": "무창",
+      "currentBuyer": "선진한마을",
+      "costLevel": "최저 전입두당 55,000원",
+      "loan": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "자돈품질불만으로 현재 전입두당 55,000원 보정, 9/2 오전 미팅"
+    },
+    {
+      "manager": "심유선",
+      "region": "보령",
+      "farm": "농현농장",
+      "headcount": 1700,
+      "buildings": 7,
+      "floor": "반슬랏",
+      "ventilation": "윈치",
+      "currentBuyer": "보람",
+      "costLevel": "최저 출하두당 62,000원",
+      "loan": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "원활한 입식이 되질 않아 불만 고조, 9월 1주 추가 미팅 예정"
+    }
+  ]
+}
 ;
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
@@ -922,6 +1109,33 @@ function renderCompetitorTable() {
   `).join('');
 }
 renderCompetitorTable();
+
+// ---------------- New farm pipeline ----------------
+function renderNewFarmsTable() {
+  document.getElementById('newFarmsUpdatedAt').textContent = NEW_FARMS.updatedAt;
+  document.getElementById('newFarmsBody').innerHTML = NEW_FARMS.rows.map(r => {
+    const barnInfo = [
+      r.buildings !== null ? r.buildings + '동' : null,
+      r.floor,
+      r.ventilation,
+    ].filter(Boolean).join(' · ') || '-';
+    const dealProb = r.dealProb !== null && r.dealProb !== undefined ? Math.round(r.dealProb * 100) + '%' : '-';
+    const dealNote = [r.dealDate, r.note].filter(Boolean).join(' · ') || '-';
+    return `<tr>
+      <td class="co-name">${r.manager}</td>
+      <td class="co-name">${r.region}</td>
+      <td class="co-name">${r.farm}</td>
+      <td class="mono">${fmt(r.headcount)}두</td>
+      <td>${barnInfo}</td>
+      <td>${r.currentBuyer || '-'}</td>
+      <td>${r.costLevel || '-'}</td>
+      <td>${r.loan || '-'}</td>
+      <td class="mono">${dealProb}</td>
+      <td>${dealNote}</td>
+    </tr>`;
+  }).join('');
+}
+renderNewFarmsTable();
 
 const AGE_BUCKETS = buildAgeBuckets();
 renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
