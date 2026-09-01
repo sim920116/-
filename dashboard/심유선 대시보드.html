@@ -523,6 +523,7 @@
               <th>대여금 등</th>
               <th>거래가능성</th>
               <th>거래가능일 / 비고</th>
+              <th>업데이트일자</th>
             </tr>
           </thead>
           <tbody id="newFarmsBody"></tbody>
@@ -596,6 +597,7 @@ const NEW_FARMS = {
       "manager": "심유선",
       "region": "안성",
       "farm": "달우물농장",
+      "updatedAt": "2026-08-27",
       "headcount": 1300,
       "buildings": null,
       "floor": null,
@@ -611,6 +613,7 @@ const NEW_FARMS = {
       "manager": "심유선",
       "region": "이천",
       "farm": "하나농장",
+      "updatedAt": "2026-08-27",
       "headcount": 1500,
       "buildings": null,
       "floor": null,
@@ -626,6 +629,7 @@ const NEW_FARMS = {
       "manager": "심유선",
       "region": "옥천",
       "farm": "요셉농장",
+      "updatedAt": "2026-09-01",
       "headcount": 1000,
       "buildings": 2,
       "floor": "톱밥",
@@ -641,6 +645,7 @@ const NEW_FARMS = {
       "manager": "심유선",
       "region": "보령",
       "farm": "농현농장",
+      "updatedAt": "2026-09-01",
       "headcount": 1700,
       "buildings": 7,
       "floor": "반슬랏",
@@ -650,7 +655,7 @@ const NEW_FARMS = {
       "loan": null,
       "dealProb": null,
       "dealDate": null,
-      "note": "현재 보람측 사육비 인상 및 경쟁사의 잦은 방문으로 거래처 비교 검토 중. 6·7동은 우레탄공사 예정(가시오랑, 출하완료 후 진행), 전입예정은 11월 1주차로 예상.",
+      "note": "현재 보람측 사육비 인상 및 경쟁사의 잦은 방문으로 거래처 비교 검토 중. 6·7동은 우레탄공사 예정(가시오랑, 출하완료 후 진행), 전입예정은 11월 1주차로 예상. 추석 전후 재미팅 예정.",
       "buildingDetail": [
         { "building": "1동", "headcount": "180~190두", "entryDate": "6/26", "note": null },
         { "building": "2동", "headcount": "190~200두", "entryDate": "6/26", "note": null },
@@ -1055,6 +1060,7 @@ function renderNewFarmsTable() {
       <td>${r.loan || '-'}</td>
       <td class="mono">${dealProb}</td>
       <td>${dealNote}</td>
+      <td class="mono">${r.updatedAt || '-'}</td>
     </tr>`;
   }).join('');
 
