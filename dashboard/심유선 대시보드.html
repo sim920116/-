@@ -330,6 +330,9 @@
   .compare-table tbody tr:nth-child(even) td { background: var(--surface-inset); }
   .compare-table .co-name { font-weight: 700; white-space: nowrap; }
   .compare-table .co-amount { color: var(--accent); font-weight: 600; }
+
+  .building-card { margin-top: 14px; }
+  .building-card .card-title { font-size: 13px; }
 </style>
 
 <div class="dash">
@@ -526,6 +529,7 @@
         </table>
       </div>
     </div>
+    <div id="newFarmsBuildingDetails"></div>
   </div>
 
   <div class="footer">
@@ -646,7 +650,16 @@ const NEW_FARMS = {
       "loan": null,
       "dealProb": null,
       "dealDate": null,
-      "note": "원활한 입식이 되질 않아 불만 고조, 9월 1주 추가 미팅 예정"
+      "note": "현재 보람측 사육비 인상 및 경쟁사의 잦은 방문으로 거래처 비교 검토 중. 6·7동은 우레탄공사 예정(가시오랑, 출하완료 후 진행), 전입예정은 11월 1주차로 예상.",
+      "buildingDetail": [
+        { "building": "1동", "headcount": "180~190두", "entryDate": "6/26", "note": null },
+        { "building": "2동", "headcount": "190~200두", "entryDate": "6/26", "note": null },
+        { "building": "3동", "headcount": "210~220두", "entryDate": "8/8", "note": null },
+        { "building": "4동", "headcount": "190두", "entryDate": "8/8", "note": null },
+        { "building": "5동", "headcount": "500두", "entryDate": "9/4(예정)", "note": "보람 입식 예정 · 우레탄·기둥보수 공사완료" },
+        { "building": "6동", "headcount": "180~190두", "entryDate": "6/5", "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차" },
+        { "building": "7동", "headcount": "180~190두", "entryDate": "6/5", "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차" }
+      ]
     }
   ]
 }
@@ -1044,6 +1057,24 @@ function renderNewFarmsTable() {
       <td>${dealNote}</td>
     </tr>`;
   }).join('');
+
+  const withDetail = NEW_FARMS.rows.filter(r => r.buildingDetail && r.buildingDetail.length);
+  document.getElementById('newFarmsBuildingDetails').innerHTML = withDetail.map(r => `
+    <div class="card building-card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">${r.farm} 동별 현황</p>
+          <p class="card-caption">두수 · 전입일자 · 공사/전입 비고</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="compare-table" style="min-width:640px;">
+          <thead><tr><th>동</th><th>두수</th><th>전입일자</th><th>비고</th></tr></thead>
+          <tbody>${r.buildingDetail.map(b => `<tr><td class="co-name">${b.building}</td><td class="mono">${b.headcount}</td><td class="mono">${b.entryDate}</td><td>${b.note || '-'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  `).join('');
 }
 renderNewFarmsTable();
 
