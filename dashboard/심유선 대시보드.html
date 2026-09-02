@@ -520,6 +520,7 @@
               <th>돈사 정보</th>
               <th>현거래처</th>
               <th>현 사육비 수준</th>
+              <th>생산성적</th>
               <th>대여금 등</th>
               <th>거래가능성</th>
               <th>거래가능일 / 비고</th>
@@ -605,6 +606,7 @@ const NEW_FARMS = {
       "currentBuyer": "도드람(박인식 조합원)",
       "costLevel": "규모두당 56,000원",
       "loan": null,
+      "performance": null,
       "dealProb": null,
       "dealDate": null,
       "note": "박인식 조합원과 18년째 거래 중, 농장주가 위탁장 관리까지 도맡아 운영해 관계가 깊음. 본장주인이 위탁을 하지 않는 이상 거래처를 바꿀 의향 없음."
@@ -621,6 +623,7 @@ const NEW_FARMS = {
       "currentBuyer": null,
       "costLevel": null,
       "loan": null,
+      "performance": null,
       "dealProb": null,
       "dealDate": null,
       "note": "8/28 오후 3시 미팅 후 파악"
@@ -637,6 +640,7 @@ const NEW_FARMS = {
       "currentBuyer": "선진한마을",
       "costLevel": "최저 출하두당 63,000원 협의완료",
       "loan": null,
+      "performance": "FCR 2.7~2.8대 확인완료",
       "dealProb": null,
       "dealDate": "9월 3주차 계약서 작성 예정",
       "note": "최저 출하두당 63,000원은 협의완료. 9월 2주차 선진 거래해지 통보 예정. 900두 규모로 운영 협의 완료. 1년 사육 후 동물복지 전환 검토(신흥 견학 추후 진행 예정). 농장 옆 모돈장 인접으로 PRRS 백신 필수."
@@ -653,6 +657,7 @@ const NEW_FARMS = {
       "currentBuyer": "보람",
       "costLevel": "최저 출하두당 62,000원",
       "loan": null,
+      "performance": "육성율 98~99% 확인완료",
       "dealProb": null,
       "dealDate": null,
       "note": "현재 보람측 사육비 인상 및 경쟁사의 잦은 방문으로 거래처 비교 검토 중. 6·7동은 우레탄공사 예정(가시오랑, 출하완료 후 진행), 전입예정은 11월 1주차로 예상. 추석 전후 재미팅 예정.",
@@ -1057,6 +1062,7 @@ function renderNewFarmsTable() {
       <td>${barnInfo}</td>
       <td>${r.currentBuyer || '-'}</td>
       <td>${r.costLevel || '-'}</td>
+      <td class="co-amount">${r.performance || '-'}</td>
       <td>${r.loan || '-'}</td>
       <td class="mono">${dealProb}</td>
       <td>${dealNote}</td>
