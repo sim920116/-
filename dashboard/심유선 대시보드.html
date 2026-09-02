@@ -962,16 +962,36 @@ document.getElementById('salesFarmSearch').addEventListener('input', e => {
   renderSalesLog();
 });
 
-// ---------------- Batch memos (persisted via db capability) ----------------
+// ---------------- Batch memos (db capability when available, localStorage fallback) ----------------
+const MEMO_LS_KEY = 'simyuseon-dashboard-memos';
 let memoDb = null;
+let memoMode = 'local'; // 'db' | 'local' | 'unavailable'
 let memoReady = false;
 let memos = {};
+
+function readLocalMemos() {
+  try {
+    return JSON.parse(localStorage.getItem(MEMO_LS_KEY) || '{}');
+  } catch (e) {
+    return null;
+  }
+}
+function writeLocalMemo(group, text) {
+  try {
+    const all = readLocalMemos() || {};
+    all[group] = text;
+    localStorage.setItem(MEMO_LS_KEY, JSON.stringify(all));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 function applyMemosToInputs() {
   document.querySelectorAll('.memo-input').forEach(el => {
     if (memoReady) {
-      el.disabled = !memoDb;
-      el.placeholder = memoDb ? '메모 입력' : '메모 기능 사용 불가';
+      el.disabled = memoMode === 'unavailable';
+      el.placeholder = memoMode === 'unavailable' ? '메모 기능 사용 불가' : '메모 입력';
     }
     const g = el.dataset.group;
     if (memos[g] !== undefined && document.activeElement !== el) el.value = memos[g];
@@ -983,25 +1003,42 @@ function wireMemoInputs() {
     if (el.dataset.wired) return;
     el.dataset.wired = '1';
     el.addEventListener('change', async () => {
-      if (!memoDb) return;
+      if (memoMode === 'unavailable') return;
       const g = el.dataset.group;
       const text = el.value;
-      try {
-        await memoDb.doc('memos/' + g).set({ text, updatedAt: new Date().toISOString() });
+      let ok = false;
+      if (memoMode === 'db' && memoDb) {
+        try {
+          await memoDb.doc('memos/' + g).set({ text, updatedAt: new Date().toISOString() });
+          ok = true;
+        } catch (e) {
+          console.error('memo db save failed', e);
+        }
+      } else {
+        ok = writeLocalMemo(g, text);
+      }
+      if (ok) {
         memos[g] = text;
         el.classList.add('memo-saved');
         setTimeout(() => el.classList.remove('memo-saved'), 800);
-      } catch (e) {
-        console.error('memo save failed', e);
       }
     });
   });
 }
 
+function initLocalMemoFallback() {
+  const local = readLocalMemos();
+  memoMode = local === null ? 'unavailable' : 'local';
+  memos = local || {};
+  memoReady = true;
+  applyMemosToInputs();
+}
+
 if (window.claude && typeof window.claude.use === 'function') {
   window.claude.use('db').then(ns => {
     memoDb = ns;
-    if (!memoDb) { memoReady = true; applyMemosToInputs(); return; }
+    if (!memoDb) { initLocalMemoFallback(); return; }
+    memoMode = 'db';
     memoDb.collection('memos').onSnapshot(
       snap => {
         memos = {};
@@ -1009,11 +1046,11 @@ if (window.claude && typeof window.claude.use === 'function') {
         memoReady = true;
         applyMemosToInputs();
       },
-      () => { memoReady = true; applyMemosToInputs(); }
+      () => { initLocalMemoFallback(); }
     );
-  }).catch(() => { memoReady = true; applyMemosToInputs(); });
+  }).catch(() => { initLocalMemoFallback(); });
 } else {
-  memoReady = true;
+  initLocalMemoFallback();
 }
 
 // ---------------- Filters + Table ----------------
