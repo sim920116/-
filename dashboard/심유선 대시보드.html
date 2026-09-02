@@ -298,6 +298,7 @@
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: repeat(3, 1fr); }
     .chart-grid { grid-template-columns: 1fr; }
+    .analysis-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 560px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -333,6 +334,14 @@
 
   .building-card { margin-top: 14px; }
   .building-card .card-title { font-size: 13px; }
+
+  .analysis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+  .sub-heading { font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; margin: 0 0 8px; }
+  .kv-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .kv-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  .kv-table td:first-child { color: var(--ink-soft); }
+  .kv-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .kv-table tr:last-child td { border-bottom: none; }
 </style>
 
 <div class="dash">
@@ -532,6 +541,7 @@
       </div>
     </div>
     <div id="newFarmsBuildingDetails"></div>
+    <div id="newFarmsAnalysisDetails"></div>
   </div>
 
   <div class="footer">
@@ -643,7 +653,37 @@ const NEW_FARMS = {
       "performance": "FCR 2.7~2.8대 확인완료",
       "dealProb": null,
       "dealDate": "9월 3주차 계약서 작성 예정",
-      "note": "최저 출하두당 63,000원은 협의완료. 9월 2주차 선진 거래해지 통보 예정. 900두 규모로 운영 협의 완료. 1년 사육 후 동물복지 전환 검토(신흥 견학 추후 진행 예정). 농장 옆 모돈장 인접으로 PRRS 백신 필수."
+      "note": "최저 출하두당 63,000원은 협의완료. 9월 2주차 선진 거래해지 통보 예정. 900두 규모로 운영 협의 완료. 1년 사육 후 동물복지 전환 검토(신흥 견학 추후 진행 예정). 농장 옆 모돈장 인접으로 PRRS 백신 필수.",
+      "detailAnalysis": {
+        "scale": [
+          { "label": "규모", "value": 1000 },
+          { "label": "현사육규모", "value": 950 },
+          { "label": "협의규모", "value": 900 }
+        ],
+        "currentBuyerCost": [
+          { "label": "현재 사육비", "value": 58000000 },
+          { "label": "최소사육비", "value": 52250000 },
+          { "label": "두당 사육비", "value": 55000 }
+        ],
+        "ourOffer": [
+          { "label": "협의 사육비", "value": null },
+          { "label": "최소사육비", "value": 54000000 },
+          { "label": "협의두당 출하두당 사육비", "value": 63000 }
+        ],
+        "survivalRateTable": [
+          { "rate": 100, "cost": 60000 },
+          { "rate": 99, "cost": 60606 },
+          { "rate": 98, "cost": 61224 },
+          { "rate": 97, "cost": 61856 },
+          { "rate": 96, "cost": 62500 },
+          { "rate": 95, "cost": 63158 }
+        ],
+        "scaleNote": "1년 일반 사육 후 동물복지 전환",
+        "buyerComparison": [
+          { "buyer": "보람", "structure": "전입두당", "amount": 58000, "cycleRevenue": 55100000, "yearRevenue": 154280000, "note": "2.8회전 기준" },
+          { "buyer": "개인농장", "structure": "규모두당", "amount": 57000, "cycleRevenue": 54150000, "yearRevenue": 162450000, "note": null }
+        ]
+      }
     },
     {
       "manager": "심유선",
@@ -1087,6 +1127,51 @@ function renderNewFarmsTable() {
       </div>
     </div>
   `).join('');
+
+  const withAnalysis = NEW_FARMS.rows.filter(r => r.detailAnalysis);
+  document.getElementById('newFarmsAnalysisDetails').innerHTML = withAnalysis.map(r => {
+    const d = r.detailAnalysis;
+    const kv = (rows, unit) => `<table class="kv-table">${rows.map(x => `<tr><td>${x.label}</td><td>${x.value !== null && x.value !== undefined ? fmt(x.value) + (unit || '') : '-'}</td></tr>`).join('')}</table>`;
+    return `
+    <div class="card building-card">
+      <div class="card-head">
+        <div>
+          <p class="card-title">${r.farm} 상세 분석</p>
+          <p class="card-caption">사육규모 · 사육비 비교 · 육성율별 사육비 · 접촉 거래처 비교</p>
+        </div>
+      </div>
+      <div class="analysis-grid">
+        <div>
+          <p class="sub-heading">사육규모</p>
+          ${kv(d.scale, '두')}
+        </div>
+        <div>
+          <p class="sub-heading">현거래처 사육비</p>
+          ${kv(d.currentBuyerCost, '원')}
+        </div>
+        <div>
+          <p class="sub-heading">당사 제시</p>
+          ${kv(d.ourOffer, '원')}
+        </div>
+      </div>
+      <p class="sub-heading">육성율별 출하두당 사육비 (당사 제시 기준)</p>
+      <div class="table-scroll">
+        <table class="compare-table" style="min-width:480px; margin-bottom:14px;">
+          <thead><tr><th>육성율</th><th>출하두당 사육비</th></tr></thead>
+          <tbody>${d.survivalRateTable.map(x => `<tr><td class="co-name">${x.rate}%</td><td class="mono">${fmt(x.cost)}원</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      ${d.scaleNote ? `<p class="card-caption" style="margin-bottom:14px;">비고: ${d.scaleNote}</p>` : ''}
+      <p class="sub-heading">현재 접촉 거래처 비교</p>
+      <div class="table-scroll">
+        <table class="compare-table" style="min-width:720px;">
+          <thead><tr><th>거래처</th><th>제시 사육비 구조</th><th>금액</th><th>1회전 수익</th><th>1년 예상수익</th><th>비고</th></tr></thead>
+          <tbody>${d.buyerComparison.map(b => `<tr><td class="co-name">${b.buyer}</td><td>${b.structure}</td><td class="mono">${fmt(b.amount)}원</td><td class="mono">${fmt(b.cycleRevenue)}원</td><td class="mono co-amount">${fmt(b.yearRevenue)}원</td><td>${b.note || '-'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  }).join('');
 }
 renderNewFarmsTable();
 
