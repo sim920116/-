@@ -168,6 +168,19 @@
   .filters-spacer { flex: 1; }
   .result-count { font-size: 12px; color: var(--muted); }
 
+  .memo-col { text-align: left !important; }
+  td.memo-cell { text-align: left; }
+  .memo-input {
+    width: 170px; max-width: 100%; padding: 5px 8px; font-size: 12px;
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    background: var(--surface); color: var(--ink); font-family: inherit;
+    transition: border-color .15s ease;
+  }
+  .memo-input:disabled { opacity: 0.45; cursor: not-allowed; }
+  .memo-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .memo-input.memo-saved { border-color: var(--good); }
+  .memo-status { font-size: 10.5px; color: var(--muted); margin-top: 8px; }
+
   /* ---------- Charts ---------- */
   .chart-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;
@@ -386,7 +399,7 @@
     <div class="table-card-head">
       <div>
         <p class="card-title" style="margin-bottom:0">배치별 상세 현황</p>
-        <p class="card-caption" style="margin-bottom:0">실험농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬</p>
+        <p class="card-caption" style="margin-bottom:0">실험농장 그룹(배치) 단위 원장 · 헤더 클릭 시 정렬 · 메모는 입력 후 다른 곳을 클릭하면 자동 저장됩니다</p>
       </div>
     </div>
     <div class="table-scroll">
@@ -403,6 +416,7 @@
             <th data-key="sold"><button>판매두수 <span class="sort-arrow">▲</span></button></th>
             <th data-key="currentStock"><button>현재고 <span class="sort-arrow">▲</span></button></th>
             <th data-key="survivalRate"><button>육성률 <span class="sort-arrow">▲</span></button></th>
+            <th class="memo-col">메모</th>
           </tr>
         </thead>
         <tbody id="ledgerBody"></tbody>
@@ -948,6 +962,60 @@ document.getElementById('salesFarmSearch').addEventListener('input', e => {
   renderSalesLog();
 });
 
+// ---------------- Batch memos (persisted via db capability) ----------------
+let memoDb = null;
+let memoReady = false;
+let memos = {};
+
+function applyMemosToInputs() {
+  document.querySelectorAll('.memo-input').forEach(el => {
+    if (memoReady) {
+      el.disabled = !memoDb;
+      el.placeholder = memoDb ? '메모 입력' : '메모 기능 사용 불가';
+    }
+    const g = el.dataset.group;
+    if (memos[g] !== undefined && document.activeElement !== el) el.value = memos[g];
+  });
+}
+
+function wireMemoInputs() {
+  document.querySelectorAll('.memo-input').forEach(el => {
+    if (el.dataset.wired) return;
+    el.dataset.wired = '1';
+    el.addEventListener('change', async () => {
+      if (!memoDb) return;
+      const g = el.dataset.group;
+      const text = el.value;
+      try {
+        await memoDb.doc('memos/' + g).set({ text, updatedAt: new Date().toISOString() });
+        memos[g] = text;
+        el.classList.add('memo-saved');
+        setTimeout(() => el.classList.remove('memo-saved'), 800);
+      } catch (e) {
+        console.error('memo save failed', e);
+      }
+    });
+  });
+}
+
+if (window.claude && typeof window.claude.use === 'function') {
+  window.claude.use('db').then(ns => {
+    memoDb = ns;
+    if (!memoDb) { memoReady = true; applyMemosToInputs(); return; }
+    memoDb.collection('memos').onSnapshot(
+      snap => {
+        memos = {};
+        snap.docs.forEach(d => { memos[d.id] = (d.data() || {}).text || ''; });
+        memoReady = true;
+        applyMemosToInputs();
+      },
+      () => { memoReady = true; applyMemosToInputs(); }
+    );
+  }).catch(() => { memoReady = true; applyMemosToInputs(); });
+} else {
+  memoReady = true;
+}
+
 // ---------------- Filters + Table ----------------
 const state = { status: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
 
@@ -975,7 +1043,7 @@ function renderTable() {
 
   const body = document.getElementById('ledgerBody');
   if (rows.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="10">조건에 맞는 배치가 없습니다.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11">조건에 맞는 배치가 없습니다.</td></tr>`;
   } else {
     body.innerHTML = rows.map(r => {
       const st = statusOf(r.survivalRate);
@@ -990,8 +1058,11 @@ function renderTable() {
         <td class="mono">${fmt(r.sold)}</td>
         <td class="mono">${fmt(r.currentStock)}</td>
         <td>${st ? `<span class="status-chip st-${st}"><span class="status-dot st-${st}"></span>${fmt1(r.survivalRate)}%</span>` : '-'}</td>
+        <td class="memo-cell"><input type="text" class="memo-input" data-group="${r.group}" placeholder="메모 입력" disabled /></td>
       </tr>`;
     }).join('');
+    applyMemosToInputs();
+    wireMemoInputs();
   }
   document.getElementById('resultCount').textContent = `${rows.length} / ${RECORDS.length}개 배치 표시중`;
 
@@ -1018,6 +1089,7 @@ function renderTable() {
         <td class="mono">${fmt(sum('sold'))}</td>
         <td class="mono">${fmt(sum('currentStock'))}</td>
         <td class="mono">${avg('survivalRate') !== null ? fmt1(avg('survivalRate')) + '%' : '-'}</td>
+        <td>-</td>
       </tr>
     `;
   }
