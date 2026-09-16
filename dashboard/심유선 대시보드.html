@@ -344,6 +344,7 @@
   .compare-table tbody tr:nth-child(even) td { background: var(--surface-inset); }
   .compare-table .co-name { font-weight: 700; white-space: nowrap; }
   .compare-table .co-amount { color: var(--accent); font-weight: 600; }
+  .compare-table .pre-line { white-space: pre-line; }
 
   .building-card { margin-top: 14px; }
   .building-card .card-title { font-size: 13px; }
@@ -387,6 +388,7 @@
     <button class="tab-btn" data-tab="mortality">폐사 세부내역</button>
     <button class="tab-btn" data-tab="competitor">경쟁사 사육비 비교</button>
     <button class="tab-btn" data-tab="newfarms">신규농장 현황</button>
+    <button class="tab-btn" data-tab="weeklyreport">주간보고</button>
   </div>
 
   <div class="tab-panel active" id="tab-farm">
@@ -568,6 +570,30 @@
     </div>
     <div id="newFarmsBuildingDetails"></div>
     <div id="newFarmsAnalysisDetails"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-weeklyreport">
+    <div class="table-card">
+      <div class="table-card-head">
+        <div>
+          <p class="card-title" style="margin-bottom:0" id="weeklyReportTitle">주간보고</p>
+          <p class="card-caption" style="margin-bottom:0">대상 주차 <span class="mono" id="weeklyReportWeekOf">-</span> · 업데이트 <span class="mono" id="weeklyReportUpdatedAt">-</span></p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="compare-table" id="weeklyReportTable" style="min-width:760px;">
+          <thead>
+            <tr>
+              <th>이슈사항</th>
+              <th>전주 진척사항</th>
+              <th>금주 진척사항</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody id="weeklyReportBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -764,6 +790,45 @@ const NEW_FARMS = {
         { "building": "1동", "headcount": "1,000두", "entryDate": "-", "note": "반슬랏·무창" },
         { "building": "2동", "headcount": "1,200두", "entryDate": "-", "note": "반슬랏·무창(현대화예정)" }
       ]
+    }
+  ]
+}
+;
+
+const WEEKLY_REPORT = {
+  "title": "비육계열 1팀 9월 3주 주간보고",
+  "weekOf": "26년 9월 3주",
+  "updatedAt": "2026-09-16",
+  "rows": [
+    {
+      "day": "월",
+      "prevWeek": "경기 북부 육가공업체(에이스) 계약미팅-(권영제부장 동행)\n박석3 - 첫출하점검 및 자돈 돈군 점검(권영제부장 동행)",
+      "thisWeek": "광주 사무실 - 사무업무\n경기 안성 신규미팅",
+      "note": null
+    },
+    {
+      "day": "화",
+      "prevWeek": "평택 사무실 - 파파농장 시설장려금 서류 수취\n파파1,2 - 시설장려금서류 재작성 및 출하점검\n웰빙파주 - 재고실사(권영제부장 동행)",
+      "thisWeek": "충남 보령 신규 타겟농장 명절선물 전달 겸 미팅(농현,태영)\n경기 안성 신규 타겟농장 명절선물 전달(찬식,달우물)",
+      "note": null
+    },
+    {
+      "day": "수",
+      "prevWeek": "거성 - 출하점검(윤지형부장 동행)\n성웅 - 막탕점검(윤지형부장 동행)\n대왕 - 출하점검(윤지형부장 동행)\n신옥신 - 출하점검(윤지형부장 동행)\n한영 - 오계이슈돈군 주사치료(윤지형부장 동행)",
+      "thisWeek": "양동 - 디디팜 자돈 돈군 점검(윤지형부장 동행)\n진정2 - 출하돈군 재고실사 및 퇴비장 공사점검(윤지형부장 동행)",
+      "note": null
+    },
+    {
+      "day": "목",
+      "prevWeek": "스텝업 교육",
+      "thisWeek": "충남 보령 신규농장 계약서 작성(팀장님 동행)",
+      "note": null
+    },
+    {
+      "day": "금",
+      "prevWeek": "스텝업 교육",
+      "thisWeek": "신규영업",
+      "note": null
     }
   ]
 }
@@ -1347,6 +1412,22 @@ function renderNewFarmsTable() {
   }).join('');
 }
 renderNewFarmsTable();
+
+// ---------------- Weekly report ----------------
+function renderWeeklyReport() {
+  document.getElementById('weeklyReportTitle').textContent = WEEKLY_REPORT.title || '주간보고';
+  document.getElementById('weeklyReportWeekOf').textContent = WEEKLY_REPORT.weekOf || '-';
+  document.getElementById('weeklyReportUpdatedAt').textContent = WEEKLY_REPORT.updatedAt || '-';
+  document.getElementById('weeklyReportBody').innerHTML = WEEKLY_REPORT.rows.map(r => `
+    <tr>
+      <td class="co-name">${r.day}</td>
+      <td class="pre-line">${r.prevWeek || '-'}</td>
+      <td class="pre-line">${r.thisWeek || '-'}</td>
+      <td>${r.note || '-'}</td>
+    </tr>
+  `).join('');
+}
+renderWeeklyReport();
 
 const AGE_BUCKETS = buildAgeBuckets();
 renderAgeMetricChart('ageChart', 'ageChartTable', AGE_BUCKETS, 'stock', 'var(--series-blue)', '현재고');
