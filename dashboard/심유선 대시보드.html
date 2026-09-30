@@ -346,6 +346,21 @@
   .compare-table .co-amount { color: var(--accent); font-weight: 600; }
   .compare-table .pre-line { white-space: pre-line; }
 
+  .week-sheet-tabs {
+    display: flex; gap: 4px; flex-wrap: wrap; margin: 2px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-sheet-tab {
+    font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    background: var(--surface-inset); border: 1px solid var(--border); border-radius: 6px 6px 0 0;
+    padding: 7px 14px 6px; cursor: pointer; margin-bottom: -1px; border-bottom: none;
+  }
+  .week-sheet-tab:hover { color: var(--ink); background: var(--surface-2); }
+  .week-sheet-tab.active {
+    color: var(--accent-strong); background: var(--surface); border-color: var(--border-strong);
+    box-shadow: 0 -1px 0 var(--surface) inset;
+  }
+
   .building-card { margin-top: 14px; }
   .building-card .card-title { font-size: 13px; }
 
@@ -580,6 +595,7 @@
           <p class="card-caption" style="margin-bottom:0">대상 주차 <span class="mono" id="weeklyReportWeekOf">-</span> · 업데이트 <span class="mono" id="weeklyReportUpdatedAt">-</span></p>
         </div>
       </div>
+      <div class="week-sheet-tabs" id="weeklyReportWeekTabs"></div>
       <div class="table-scroll">
         <table class="compare-table" id="weeklyReportTable" style="min-width:760px;">
           <thead>
@@ -795,43 +811,122 @@ const NEW_FARMS = {
 }
 ;
 
-const WEEKLY_REPORT = {
-  "title": "비육계열 1팀 9월 3주 주간보고",
-  "weekOf": "26년 9월 3주",
-  "updatedAt": "2026-09-16",
-  "rows": [
-    {
-      "day": "월",
-      "prevWeek": "경기 북부 육가공업체(에이스) 계약미팅-(권영제부장 동행)\n박석3 - 첫출하점검 및 자돈 돈군 점검(권영제부장 동행)",
-      "thisWeek": "광주 사무실 - 사무업무\n경기 안성 신규미팅",
-      "note": null
-    },
-    {
-      "day": "화",
-      "prevWeek": "평택 사무실 - 파파농장 시설장려금 서류 수취\n파파1,2 - 시설장려금서류 재작성 및 출하점검\n웰빙파주 - 재고실사(권영제부장 동행)",
-      "thisWeek": "충남 보령 신규 타겟농장 명절선물 전달 겸 미팅(농현,태영)\n경기 안성 신규 타겟농장 명절선물 전달(찬식,달우물)",
-      "note": null
-    },
-    {
-      "day": "수",
-      "prevWeek": "거성 - 출하점검(윤지형부장 동행)\n성웅 - 막탕점검(윤지형부장 동행)\n대왕 - 출하점검(윤지형부장 동행)\n신옥신 - 출하점검(윤지형부장 동행)\n한영 - 오계이슈돈군 주사치료(윤지형부장 동행)",
-      "thisWeek": "양동 - 디디팜 자돈 돈군 점검(윤지형부장 동행)\n진정2 - 출하돈군 재고실사 및 퇴비장 공사점검(윤지형부장 동행)",
-      "note": null
-    },
-    {
-      "day": "목",
-      "prevWeek": "스텝업 교육",
-      "thisWeek": "충남 보령 신규농장 계약서 작성(팀장님 동행)",
-      "note": null
-    },
-    {
-      "day": "금",
-      "prevWeek": "스텝업 교육",
-      "thisWeek": "신규영업",
-      "note": null
-    }
-  ]
-}
+const WEEKLY_REPORTS = [
+  {
+    "weekKey": "2026-09-W3",
+    "title": "비육계열 1팀 9월 3주 주간보고",
+    "weekOf": "26년 9월 3주",
+    "updatedAt": "2026-09-16",
+    "rows": [
+      {
+        "day": "월",
+        "prevWeek": "경기 북부 육가공업체(에이스) 계약미팅-(권영제부장 동행)\n박석3 - 첫출하점검 및 자돈 돈군 점검(권영제부장 동행)",
+        "thisWeek": "광주 사무실 - 사무업무\n경기 안성 신규미팅",
+        "note": null
+      },
+      {
+        "day": "화",
+        "prevWeek": "평택 사무실 - 파파농장 시설장려금 서류 수취\n파파1,2 - 시설장려금서류 재작성 및 출하점검\n웰빙파주 - 재고실사(권영제부장 동행)",
+        "thisWeek": "충남 보령 신규 타겟농장 명절선물 전달 겸 미팅(농현,태영)\n경기 안성 신규 타겟농장 명절선물 전달(찬식,달우물)",
+        "note": null
+      },
+      {
+        "day": "수",
+        "prevWeek": "거성 - 출하점검(윤지형부장 동행)\n성웅 - 막탕점검(윤지형부장 동행)\n대왕 - 출하점검(윤지형부장 동행)\n신옥신 - 출하점검(윤지형부장 동행)\n한영 - 오계이슈돈군 주사치료(윤지형부장 동행)",
+        "thisWeek": "양동 - 디디팜 자돈 돈군 점검(윤지형부장 동행)\n진정2 - 출하돈군 재고실사 및 퇴비장 공사점검(윤지형부장 동행)",
+        "note": null
+      },
+      {
+        "day": "목",
+        "prevWeek": "스텝업 교육",
+        "thisWeek": "충남 보령 신규농장 계약서 작성(팀장님 동행)",
+        "note": null
+      },
+      {
+        "day": "금",
+        "prevWeek": "스텝업 교육",
+        "thisWeek": "신규영업",
+        "note": null
+      }
+    ]
+  },
+  {
+    "weekKey": "2026-09-W4",
+    "title": "비육계열 1팀 9월 4주 주간보고",
+    "weekOf": "26년 9월 4주",
+    "updatedAt": "2026-09-30",
+    "rows": [
+      {
+        "day": "월",
+        "prevWeek": "광주 사무실 - 사무업무\n경기 안성 신규미팅",
+        "thisWeek": "충북 옥천 신규미팅\n충북 충주 신규미팅\n경기 용인 신규미팅",
+        "note": null
+      },
+      {
+        "day": "화",
+        "prevWeek": "충남 보령 신규 타겟농장 명절선물 전달 겸 미팅(농현,태영)\n경기 안성 신규 타겟농장 명절선물 전달(찬식,달우물)",
+        "thisWeek": "파파1,2 - 돈방 규격 재측정 (권영제부장 동행)\njb행복 - 첫출하 점검 (권영제부장 동행)\n형제 - 막탕점검,자돈전입) - (권영제부장 동행)\n고도 - 출하점검 - (권영제부장 동행)\n주간회의",
+        "note": null
+      },
+      {
+        "day": "수",
+        "prevWeek": "양동 - 디디팜 자돈 돈군 점검(윤지형부장 동행)\n진정2 - 출하돈군 재고실사 및 퇴비장 공사점검(윤지형부장 동행)",
+        "thisWeek": "충북 옥천 신규계약서 작성\n경기 안성 신규미팅",
+        "note": null
+      },
+      {
+        "day": "목",
+        "prevWeek": "충북 옥천 요셉농장 팀장님 동행 미팅",
+        "thisWeek": "추석 연휴",
+        "note": null
+      },
+      {
+        "day": "금",
+        "prevWeek": "신규영업",
+        "thisWeek": "추석 연휴",
+        "note": null
+      }
+    ]
+  },
+  {
+    "weekKey": "2026-09-W5",
+    "title": "비육계열 1팀 9월 5주 주간보고",
+    "weekOf": "26년 9월 5주",
+    "updatedAt": "2026-09-30",
+    "rows": [
+      {
+        "day": "월",
+        "prevWeek": "충북 옥천 신규미팅\n충북 충주 신규미팅\n경기 용인 신규미팅",
+        "thisWeek": "파파1,2, - 공사현황점검 및 입식준비확인\n사무업무",
+        "note": null
+      },
+      {
+        "day": "화",
+        "prevWeek": "파파1,2 - 돈방 규격 재측정 (권영제부장 동행)\njb행복 - 첫출하 점검 (권영제부장 동행)\n형제 - 막탕점검,자돈전입) - (권영제부장 동행)\n고도 - 출하점검 - (권영제부장 동행)\n주간회의",
+        "thisWeek": "초록팜 - 자돈전입(권영제부장 동행)\n웰빙 - 농장 재고 점검(권영제부장 동행)\n파파1,2 - 자돈전입(권영제부장 동행)\n고도 - 막탕점검(권영제부장 동행)",
+        "note": null
+      },
+      {
+        "day": "수",
+        "prevWeek": "충북 옥천 신규계약서 작성\n경기 안성 신규미팅",
+        "thisWeek": "월마감",
+        "note": null
+      },
+      {
+        "day": "목",
+        "prevWeek": "추석 연휴",
+        "thisWeek": "주간 회의",
+        "note": null
+      },
+      {
+        "day": "금",
+        "prevWeek": "추석 연휴",
+        "thisWeek": "신규영업",
+        "note": null
+      }
+    ]
+  }
+]
 ;
 
 const fmt = n => n === null || n === undefined || Number.isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
@@ -1413,12 +1508,29 @@ function renderNewFarmsTable() {
 }
 renderNewFarmsTable();
 
-// ---------------- Weekly report ----------------
+// ---------------- Weekly report (주차별 시트) ----------------
+let activeWeekKey = WEEKLY_REPORTS.length ? WEEKLY_REPORTS[WEEKLY_REPORTS.length - 1].weekKey : null;
+
+function renderWeeklyReportTabs() {
+  document.getElementById('weeklyReportWeekTabs').innerHTML = WEEKLY_REPORTS.map(w => `
+    <button type="button" class="week-sheet-tab${w.weekKey === activeWeekKey ? ' active' : ''}" data-week-key="${w.weekKey}">${w.weekOf}</button>
+  `).join('');
+  document.querySelectorAll('.week-sheet-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeWeekKey = btn.dataset.weekKey;
+      renderWeeklyReport();
+    });
+  });
+}
+
 function renderWeeklyReport() {
-  document.getElementById('weeklyReportTitle').textContent = WEEKLY_REPORT.title || '주간보고';
-  document.getElementById('weeklyReportWeekOf').textContent = WEEKLY_REPORT.weekOf || '-';
-  document.getElementById('weeklyReportUpdatedAt').textContent = WEEKLY_REPORT.updatedAt || '-';
-  document.getElementById('weeklyReportBody').innerHTML = WEEKLY_REPORT.rows.map(r => `
+  const week = WEEKLY_REPORTS.find(w => w.weekKey === activeWeekKey) || WEEKLY_REPORTS[WEEKLY_REPORTS.length - 1];
+  if (!week) return;
+  renderWeeklyReportTabs();
+  document.getElementById('weeklyReportTitle').textContent = week.title || '주간보고';
+  document.getElementById('weeklyReportWeekOf').textContent = week.weekOf || '-';
+  document.getElementById('weeklyReportUpdatedAt').textContent = week.updatedAt || '-';
+  document.getElementById('weeklyReportBody').innerHTML = week.rows.map(r => `
     <tr>
       <td class="co-name">${r.day}</td>
       <td class="pre-line">${r.prevWeek || '-'}</td>
