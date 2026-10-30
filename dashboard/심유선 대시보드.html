@@ -1112,14 +1112,14 @@ function renderAgeMetricChart(chartElId, tableElId, buckets, valueKey, colorVar,
     row.addEventListener('mousemove', e => showTooltip(e, `
       <div><b>${b.months}개월령 (${b.months * 30}~${b.months * 30 + 29}일령)</b></div>
       <div class="t-row"><span>${colLabel}</span><span>${fmt(b[valueKey])}두</span></div>
-      ${b.groups.map(g => `<div class="t-row"><span>${g.group.slice(-3)}그룹</span><span>${fmt(g[valueKey])}두</span></div>`).join('')}
+      ${b.groups.map(g => `<div class="t-row"><span>${g.group}그룹</span><span>${fmt(g[valueKey])}두</span></div>`).join('')}
     `));
     row.addEventListener('mouseleave', hideTooltip);
   });
 
   document.getElementById(tableElId).innerHTML = `
     <table class="mini-table"><thead><tr><th>개월령</th><th>${colLabel}</th><th>해당 그룹</th></tr></thead>
-    <tbody>${buckets.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b[valueKey])}두</td><td>${b.groups.map(g => g.group.slice(-3)).join(', ')}</td></tr>`).join('')}</tbody></table>`;
+    <tbody>${buckets.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b[valueKey])}두</td><td>${b.groups.map(g => g.group).join(', ')}</td></tr>`).join('')}</tbody></table>`;
 }
 
 function renderAgeMortalityChart(buckets) {
@@ -1145,14 +1145,14 @@ function renderAgeMortalityChart(buckets) {
       <div class="t-row"><span>폐사두수</span><span>${fmt(b.deaths)}두</span></div>
       <div class="t-row"><span>폐사율</span><span>${fmt1(b.mortalityRate)}%</span></div>
       <div class="t-row"><span>전입두수</span><span>${fmt(b.entryCount)}두</span></div>
-      ${b.groups.map(g => `<div class="t-row"><span>${g.group.slice(-3)}그룹</span><span>${fmt(g.deaths)}두 (${fmt1(g.deaths/g.entryCount*100)}%)</span></div>`).join('')}
+      ${b.groups.map(g => `<div class="t-row"><span>${g.group}그룹</span><span>${fmt(g.deaths)}두 (${fmt1(g.deaths/g.entryCount*100)}%)</span></div>`).join('')}
     `));
     row.addEventListener('mouseleave', hideTooltip);
   });
 
   document.getElementById('ageMortalityChartTable').innerHTML = `
     <table class="mini-table"><thead><tr><th>개월령</th><th>폐사두수</th><th>폐사율</th><th>해당 그룹</th></tr></thead>
-    <tbody>${withRate.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b.deaths)}두</td><td class="mono">${fmt1(b.mortalityRate)}%</td><td>${b.groups.map(g => g.group.slice(-3)).join(', ')}</td></tr>`).join('')}</tbody></table>`;
+    <tbody>${withRate.map(b => `<tr><td>${b.months}개월령</td><td class="mono">${fmt(b.deaths)}두</td><td class="mono">${fmt1(b.mortalityRate)}%</td><td>${b.groups.map(g => g.group).join(', ')}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // ---------------- Daily mortality log ----------------
