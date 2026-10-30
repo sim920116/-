@@ -419,7 +419,7 @@
       <button class="chip" data-filter="status" data-value="warning">주의 (90–96%)</button>
       <button class="chip" data-filter="status" data-value="critical">위험 (&lt;90%)</button>
     </div>
-    <input class="search-input" id="searchInput" type="text" placeholder="그룹명 검색" />
+    <input class="search-input" id="searchInput" type="text" placeholder="그룹명·전입처 검색" />
     <div class="filters-spacer"></div>
     <div class="result-count" id="resultCount"></div>
   </div>
@@ -1347,7 +1347,9 @@ function applyFilters() {
     if (state.status !== 'all' && statusOf(r.survivalRate) !== state.status) return false;
     if (state.search) {
       const q = state.search.toLowerCase();
-      if (!r.group.toLowerCase().includes(q)) return false;
+      const inGroup = r.group.toLowerCase().includes(q);
+      const inBreedFarm = (r.breedFarm || '').toLowerCase().includes(q);
+      if (!inGroup && !inBreedFarm) return false;
     }
     return true;
   });
