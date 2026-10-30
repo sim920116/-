@@ -413,8 +413,6 @@
   </div>
 
   <div class="tab-panel active" id="tab-farm">
-  <div class="farm-info" id="farmInfo"></div>
-
   <div class="kpi-row" id="kpiRow"></div>
 
   <div class="filters">
@@ -1025,16 +1023,6 @@ const dates = RECORDS.map(r => r.entryDate).sort();
 document.getElementById('dateRange').textContent = dates[0] + ' ~ ' + dates[dates.length - 1];
 document.getElementById('groupCountMeta').textContent = RECORDS.length;
 document.getElementById('generatedAt').textContent = '생성: ' + new Date().toISOString().slice(0,10);
-
-// ---------------- Farm info strip ----------------
-const ref = RECORDS[0];
-const farmInfo = [
-  { label: '사육 돈사구분', value: ref.category },
-  { label: '번식/자돈 공급농장', value: ref.breedFarm || '-' },
-];
-document.getElementById('farmInfo').innerHTML = farmInfo.map(f => `
-  <div class="farm-info-item">${f.label} <b>${f.value}</b></div>
-`).join('');
 
 // ---------------- KPIs ----------------
 const totalEntry = RECORDS.reduce((s, r) => s + r.entryCount, 0);
