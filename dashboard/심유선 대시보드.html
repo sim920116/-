@@ -419,7 +419,10 @@
       <button class="chip" data-filter="status" data-value="warning">주의 (90–96%)</button>
       <button class="chip" data-filter="status" data-value="critical">위험 (&lt;90%)</button>
     </div>
-    <input class="search-input" id="searchInput" type="text" placeholder="그룹명·전입처 검색" />
+    <div class="filter-group" id="breedFarmFilterGroup">
+      <span class="filter-label">전입처</span>
+    </div>
+    <input class="search-input" id="searchInput" type="text" placeholder="그룹명 검색" />
     <div class="filters-spacer"></div>
     <div class="result-count" id="resultCount"></div>
   </div>
@@ -1340,16 +1343,15 @@ if (window.claude && typeof window.claude.use === 'function') {
 }
 
 // ---------------- Filters + Table ----------------
-const state = { status: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
+const state = { status: 'all', breedFarm: 'all', search: '', sortKey: 'entryDate', sortDir: 'desc' };
 
 function applyFilters() {
   return RECORDS.filter(r => {
     if (state.status !== 'all' && statusOf(r.survivalRate) !== state.status) return false;
+    if (state.breedFarm !== 'all' && (r.breedFarm || '') !== state.breedFarm) return false;
     if (state.search) {
       const q = state.search.toLowerCase();
-      const inGroup = r.group.toLowerCase().includes(q);
-      const inBreedFarm = (r.breedFarm || '').toLowerCase().includes(q);
-      if (!inGroup && !inBreedFarm) return false;
+      if (!r.group.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -1427,6 +1429,12 @@ function renderTable() {
     if (th.dataset.key === sortKey) arrow.textContent = sortDir === 'asc' ? '▲' : '▼';
   });
 }
+
+const breedFarms = [...new Set(RECORDS.map(r => r.breedFarm).filter(Boolean))].sort();
+document.getElementById('breedFarmFilterGroup').insertAdjacentHTML('beforeend', `
+  <button class="chip active" data-filter="breedFarm" data-value="all">전체</button>
+  ${breedFarms.map(f => `<button class="chip" data-filter="breedFarm" data-value="${f}">${f}</button>`).join('')}
+`);
 
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
