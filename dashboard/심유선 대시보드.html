@@ -460,7 +460,7 @@
       <div class="card-head">
         <div>
           <p class="card-title">개월령별 현재 사육두수</p>
-          <p class="card-caption">현재일령 ÷ 30 기준 월령 구간 · 현재고 합계</p>
+          <p class="card-caption">현재일령 기준 월령 구간(60~90일 3개월령, 91~120일 4개월령, 121~150일 5개월령, 151~180일 6개월령, 181일~ 7개월령) · 현재고 합계</p>
         </div>
         <button class="toggle-table" data-target="ageChartTable">표로 보기</button>
       </div>
@@ -471,7 +471,7 @@
       <div class="card-head">
         <div>
           <p class="card-title">개월령별 폐사현황</p>
-          <p class="card-caption">현재일령 ÷ 30 기준 월령 구간 · 폐사두수 및 전입두수 대비 폐사율</p>
+          <p class="card-caption">현재일령 기준 월령 구간(60~90일 3개월령, 91~120일 4개월령, 121~150일 5개월령, 151~180일 6개월령, 181일~ 7개월령) · 폐사두수 및 전입두수 대비 폐사율</p>
         </div>
         <button class="toggle-table" data-target="ageMortalityChartTable">표로 보기</button>
       </div>
@@ -487,7 +487,7 @@
       <div class="card-head">
         <div>
           <p class="card-title">개월령별 판매두수</p>
-          <p class="card-caption">현재일령 ÷ 30 기준 월령 구간 · 판매두수 합계</p>
+          <p class="card-caption">현재일령 기준 월령 구간(60~90일 3개월령, 91~120일 4개월령, 121~150일 5개월령, 151~180일 6개월령, 181일~ 7개월령) · 판매두수 합계</p>
         </div>
         <button class="toggle-table" data-target="ageSoldChartTable">표로 보기</button>
       </div>
@@ -1078,22 +1078,39 @@ function mortalityStatus(rate) {
 }
 
 // ---------------- Stock/deaths/sold by age-in-months ----------------
+const AGE_BUCKET_DEFS = [
+  { months: 0, min: 0, max: 29 },
+  { months: 1, min: 30, max: 59 },
+  { months: 3, min: 60, max: 90 },
+  { months: 4, min: 91, max: 120 },
+  { months: 5, min: 121, max: 150 },
+  { months: 6, min: 151, max: 180 },
+  { months: 7, min: 181, max: Infinity },
+];
+function ageBucketDefFor(days) {
+  return AGE_BUCKET_DEFS.find(d => days >= d.min && days <= d.max) || AGE_BUCKET_DEFS[AGE_BUCKET_DEFS.length - 1];
+}
+function ageBucketRangeLabel(b) {
+  return `${b.min}~${b.max === Infinity ? '' : b.max}일령`;
+}
 function buildAgeBuckets() {
   const buckets = {};
   RECORDS.forEach(r => {
     if (r.currentAgeDays === null) return;
-    const months = Math.floor(r.currentAgeDays / 30);
-    if (!buckets[months]) buckets[months] = { months, stock: 0, deaths: 0, sold: 0, entryCount: 0, groups: [] };
-    buckets[months].stock += r.currentStock;
-    buckets[months].deaths += r.deaths;
-    buckets[months].sold += r.sold;
-    buckets[months].entryCount += r.entryCount;
-    buckets[months].groups.push(r);
+    const def = ageBucketDefFor(r.currentAgeDays);
+    const key = def.months;
+    if (!buckets[key]) buckets[key] = { months: def.months, min: def.min, max: def.max, stock: 0, deaths: 0, sold: 0, entryCount: 0, groups: [] };
+    buckets[key].stock += r.currentStock;
+    buckets[key].deaths += r.deaths;
+    buckets[key].sold += r.sold;
+    buckets[key].entryCount += r.entryCount;
+    buckets[key].groups.push(r);
   });
   return Object.values(buckets).sort((a, b) => a.months - b.months);
 }
 
 function renderAgeMetricChart(chartElId, tableElId, buckets, valueKey, colorVar, colLabel) {
+  const recordKey = valueKey === 'stock' ? 'currentStock' : valueKey;
   const max = Math.max(...buckets.map(b => b[valueKey]), 1);
   const el = document.getElementById(chartElId);
   el.innerHTML = buckets.map(b => {
@@ -1110,9 +1127,9 @@ function renderAgeMetricChart(chartElId, tableElId, buckets, valueKey, colorVar,
   el.querySelectorAll('.bar-row').forEach(row => {
     const b = buckets.find(x => String(x.months) === row.dataset.months);
     row.addEventListener('mousemove', e => showTooltip(e, `
-      <div><b>${b.months}개월령 (${b.months * 30}~${b.months * 30 + 29}일령)</b></div>
+      <div><b>${b.months}개월령 (${ageBucketRangeLabel(b)})</b></div>
       <div class="t-row"><span>${colLabel}</span><span>${fmt(b[valueKey])}두</span></div>
-      ${b.groups.map(g => `<div class="t-row"><span>${g.group}그룹</span><span>${fmt(g[valueKey])}두</span></div>`).join('')}
+      ${b.groups.map(g => `<div class="t-row"><span>${g.group}그룹</span><span>${fmt(g[recordKey])}두</span></div>`).join('')}
     `));
     row.addEventListener('mouseleave', hideTooltip);
   });
@@ -1141,7 +1158,7 @@ function renderAgeMortalityChart(buckets) {
   el.querySelectorAll('.bar-row').forEach(row => {
     const b = withRate.find(x => String(x.months) === row.dataset.months);
     row.addEventListener('mousemove', e => showTooltip(e, `
-      <div><b>${b.months}개월령 (${b.months * 30}~${b.months * 30 + 29}일령)</b></div>
+      <div><b>${b.months}개월령 (${ageBucketRangeLabel(b)})</b></div>
       <div class="t-row"><span>폐사두수</span><span>${fmt(b.deaths)}두</span></div>
       <div class="t-row"><span>폐사율</span><span>${fmt1(b.mortalityRate)}%</span></div>
       <div class="t-row"><span>전입두수</span><span>${fmt(b.entryCount)}두</span></div>
