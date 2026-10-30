@@ -436,6 +436,7 @@
         <thead>
           <tr>
             <th data-key="group"><button>그룹명 <span class="sort-arrow">▲</span></button></th>
+            <th data-key="breedFarm"><button>전입처 <span class="sort-arrow">▲</span></button></th>
             <th data-key="entryDate"><button>전입일 <span class="sort-arrow">▲</span></button></th>
             <th data-key="entryAgeDays"><button>전입일령 <span class="sort-arrow">▲</span></button></th>
             <th data-key="weightPerHead"><button>두당체중 <span class="sort-arrow">▲</span></button></th>
@@ -1348,12 +1349,13 @@ function renderTable() {
 
   const body = document.getElementById('ledgerBody');
   if (rows.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="11">조건에 맞는 배치가 없습니다.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="12">조건에 맞는 배치가 없습니다.</td></tr>`;
   } else {
     body.innerHTML = rows.map(r => {
       const st = statusOf(r.survivalRate);
       return `<tr>
         <td class="farm-cell mono">${r.group}</td>
+        <td class="mono">${r.breedFarm || '-'}</td>
         <td class="mono">${r.entryDate}</td>
         <td class="mono">${r.entryAgeDays !== null ? fmt(r.entryAgeDays) : '-'}</td>
         <td class="mono">${r.weightPerHead !== null ? r.weightPerHead.toFixed(1) + 'kg' : '-'}</td>
@@ -1385,6 +1387,7 @@ function renderTable() {
     foot.innerHTML = `
       <tr>
         <td>합계·평균 (${n}개 배치)</td>
+        <td>-</td>
         <td>-</td>
         <td>-</td>
         <td class="mono">${avg('weightPerHead') !== null ? avg('weightPerHead').toFixed(1) + 'kg' : '-'}</td>
