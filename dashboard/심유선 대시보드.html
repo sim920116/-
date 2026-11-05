@@ -528,7 +528,7 @@
           <p class="card-title" style="margin-bottom:0">폐사 세부내역</p>
           <p class="card-caption" style="margin-bottom:0">발생일 기준 · 농장·그룹별 폐사 입력 내역</p>
         </div>
-        <input class="search-input" id="mortalityFarmSearch" type="text" placeholder="농장명 검색" />
+        <input class="search-input" id="mortalityFarmSearch" type="text" placeholder="농장명·그룹명 검색" />
       </div>
       <div style="padding: 16px 18px 18px;">
         <div id="mortalityLog"></div>
@@ -630,7 +630,7 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-const RECORDS = [{"farm": "신흥", "group": "신흥1-4,5", "category": "비육돈", "location": "신흥A-B동", "entryDate": "2026-07-21", "entryCount": 936, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 936, "claim": 14, "currentAgeDays": 177, "deaths": 53, "sold": 0, "currentStock": 883, "survivalRate": 94.3, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [], "salesEvents": []}, {"farm": "신흥", "group": "신흥1-6", "category": "비육돈", "location": "신흥C동", "entryDate": "2026-09-10", "entryCount": 475, "entryAgeDays": 70.0, "weightPerHead": 29.5, "initialCount": 475, "claim": 5, "currentAgeDays": 126, "deaths": 23, "sold": 0, "currentStock": 452, "survivalRate": 95.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 4}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-10", "category": "비육돈", "location": "신흥5동", "entryDate": "2026-09-17", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 28.9, "initialCount": 396, "claim": 4, "currentAgeDays": 119, "deaths": 18, "sold": 0, "currentStock": 378, "survivalRate": 95.5, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-11", "category": "비육돈", "location": "신흥4동", "entryDate": "2026-09-29", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 31.3, "initialCount": 396, "claim": 4, "currentAgeDays": 107, "deaths": 15, "sold": 0, "currentStock": 381, "survivalRate": 96.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-12", "category": "비육돈", "location": "신흥3동", "entryDate": "2026-10-08", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 28.0, "initialCount": 396, "claim": 4, "currentAgeDays": 98, "deaths": 14, "sold": 0, "currentStock": 382, "survivalRate": 96.5, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-13", "category": "비육돈", "location": "신흥2동", "entryDate": "2026-10-21", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 26.5, "initialCount": 396, "claim": 4, "currentAgeDays": 85, "deaths": 9, "sold": 0, "currentStock": 387, "survivalRate": 97.7, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-14", "category": "비육돈", "location": "신흥1동", "entryDate": "2026-10-29", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 26.2, "initialCount": 396, "claim": 4, "currentAgeDays": 77, "deaths": 3, "sold": 0, "currentStock": 393, "survivalRate": 99.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "준석", "group": "준석", "category": "비육돈", "location": null, "entryDate": "2026-10-23", "entryCount": 938, "entryAgeDays": 70.0, "weightPerHead": 31.2, "initialCount": 938, "claim": 12, "currentAgeDays": 83, "deaths": 6, "sold": 0, "currentStock": 932, "survivalRate": 99.4, "breedFarm": "태평", "pigletFarm": "태평", "mortalityEvents": [{"date": "2026-10-28", "count": 3}, {"date": "2026-11-05", "count": 3}], "salesEvents": []}];
+const RECORDS = [{"farm": "신흥", "group": "신흥1-4,5", "category": "비육돈", "location": "신흥A-B동", "entryDate": "2026-07-21", "entryCount": 936, "entryAgeDays": 70.0, "weightPerHead": 24.7, "initialCount": 936, "claim": 14, "currentAgeDays": 177, "deaths": 53, "sold": 0, "currentStock": 883, "survivalRate": 94.3, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "권영제", "count": 53}], "salesEvents": []}, {"farm": "신흥", "group": "신흥1-6", "category": "비육돈", "location": "신흥C동", "entryDate": "2026-09-10", "entryCount": 475, "entryAgeDays": 70.0, "weightPerHead": 29.5, "initialCount": 475, "claim": 5, "currentAgeDays": 126, "deaths": 23, "sold": 0, "currentStock": 452, "survivalRate": 95.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 4}, {"date": "권영제", "count": 19}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-10", "category": "비육돈", "location": "신흥5동", "entryDate": "2026-09-17", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 28.9, "initialCount": 396, "claim": 4, "currentAgeDays": 119, "deaths": 18, "sold": 0, "currentStock": 378, "survivalRate": 95.5, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}, {"date": "권영제", "count": 15}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-11", "category": "비육돈", "location": "신흥4동", "entryDate": "2026-09-29", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 31.3, "initialCount": 396, "claim": 4, "currentAgeDays": 107, "deaths": 15, "sold": 0, "currentStock": 381, "survivalRate": 96.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}, {"date": "권영제", "count": 12}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-12", "category": "비육돈", "location": "신흥3동", "entryDate": "2026-10-08", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 28.0, "initialCount": 396, "claim": 4, "currentAgeDays": 98, "deaths": 14, "sold": 0, "currentStock": 382, "survivalRate": 96.5, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}, {"date": "권영제", "count": 11}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-13", "category": "비육돈", "location": "신흥2동", "entryDate": "2026-10-21", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 26.5, "initialCount": 396, "claim": 4, "currentAgeDays": 85, "deaths": 9, "sold": 0, "currentStock": 387, "survivalRate": 97.7, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}, {"date": "권영제", "count": 6}], "salesEvents": []}, {"farm": "신흥", "group": "신흥2-14", "category": "비육돈", "location": "신흥1동", "entryDate": "2026-10-29", "entryCount": 396, "entryAgeDays": 70.0, "weightPerHead": 26.2, "initialCount": 396, "claim": 4, "currentAgeDays": 77, "deaths": 3, "sold": 0, "currentStock": 393, "survivalRate": 99.2, "breedFarm": "태농", "pigletFarm": "태농", "mortalityEvents": [{"date": "2026-11-05", "count": 3}], "salesEvents": []}, {"farm": "준석", "group": "준석", "category": "비육돈", "location": null, "entryDate": "2026-10-23", "entryCount": 938, "entryAgeDays": 70.0, "weightPerHead": 31.2, "initialCount": 938, "claim": 12, "currentAgeDays": 83, "deaths": 6, "sold": 0, "currentStock": 932, "survivalRate": 99.4, "breedFarm": "태평", "pigletFarm": "태평", "mortalityEvents": [{"date": "2026-10-28", "count": 3}, {"date": "2026-11-05", "count": 3}], "salesEvents": []}];
 const COMPETITORS = [
   {
     "name": "보람",
@@ -1177,10 +1177,15 @@ function renderMortalityLog() {
   const allEvents = [];
   RECORDS.forEach(r => (r.mortalityEvents || []).forEach(ev => allEvents.push({ ...ev, farm: r.farm, group: r.group })));
   (EXTRA_MORTALITY_EVENTS || []).forEach(ev => allEvents.push({ ...ev, group: ev.group || '-' }));
-  allEvents.sort((a, b) => b.date.localeCompare(a.date));
+  const isUndated = d => !/^\d{4}-\d{2}-\d{2}$/.test(d);
+  allEvents.sort((a, b) => {
+    const au = isUndated(a.date), bu = isUndated(b.date);
+    if (au !== bu) return au ? 1 : -1;
+    return b.date.localeCompare(a.date);
+  });
 
   const q = mortalityFarmSearch.trim().toLowerCase();
-  const events = q ? allEvents.filter(e => e.farm.toLowerCase().includes(q)) : allEvents;
+  const events = q ? allEvents.filter(e => e.farm.toLowerCase().includes(q) || String(e.group).toLowerCase().includes(q)) : allEvents;
 
   const el = document.getElementById('mortalityLog');
   if (allEvents.length === 0) {
@@ -1188,7 +1193,7 @@ function renderMortalityLog() {
     return;
   }
   if (events.length === 0) {
-    el.innerHTML = `<div class="log-empty">"${mortalityFarmSearch}" 농장의 폐사 기록이 없습니다.</div>`;
+    el.innerHTML = `<div class="log-empty">"${mortalityFarmSearch}" 농장/그룹의 폐사 기록이 없습니다.</div>`;
     return;
   }
   const totalCount = events.reduce((s, e) => s + e.count, 0);
