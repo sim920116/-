@@ -671,25 +671,8 @@ const EXTRA_MORTALITY_EVENTS = []
 const EXTRA_SALES_EVENTS = []
 ;
 const NEW_FARMS = {
-  "updatedAt": "2026-10-15",
+  "updatedAt": "2026-11-12",
   "rows": [
-    {
-      "manager": "심유선",
-      "region": "안성",
-      "farm": "달우물농장",
-      "updatedAt": "2026-09-02",
-      "headcount": 1300,
-      "buildings": null,
-      "floor": null,
-      "ventilation": null,
-      "currentBuyer": "도드람(박인식 조합원)",
-      "costLevel": "규모두당 58,000원",
-      "loan": null,
-      "performance": null,
-      "dealProb": null,
-      "dealDate": null,
-      "note": "박인식 조합원과 18년째 거래 중, 농장주가 위탁장 관리까지 도맡아 운영해 관계가 깊음. 본장주인이 위탁을 하지 않는 이상 거래처를 바꿀 의향 없음."
-    },
     {
       "manager": "심유선",
       "region": "보령",
@@ -707,34 +690,48 @@ const NEW_FARMS = {
       "dealDate": "9/18(금) 추가미팅예정",
       "note": "현재 보람측 사육비 인상 및 경쟁사의 잦은 방문으로 거래처 비교 검토 중. 6·7동은 우레탄공사 예정(가시오랑, 출하완료 후 진행), 전입예정은 11월 1주차로 예상. 추석 전후 재미팅 예정.",
       "buildingDetail": [
-        { "building": "1동", "headcount": "180~190두", "entryDate": "6/26", "note": null },
-        { "building": "2동", "headcount": "190~200두", "entryDate": "6/26", "note": null },
-        { "building": "3동", "headcount": "210~220두", "entryDate": "8/8", "note": null },
-        { "building": "4동", "headcount": "190두", "entryDate": "8/8", "note": null },
-        { "building": "5동", "headcount": "500두", "entryDate": "9/4(예정)", "note": "보람 입식 예정 · 우레탄·기둥보수 공사완료" },
-        { "building": "6동", "headcount": "180~190두", "entryDate": "6/5", "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차" },
-        { "building": "7동", "headcount": "180~190두", "entryDate": "6/5", "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차" }
-      ]
-    },
-    {
-      "manager": "심유선",
-      "region": "충남 보령",
-      "farm": "태영",
-      "updatedAt": "2026-09-16",
-      "headcount": 2200,
-      "buildings": 2,
-      "floor": "반슬랏",
-      "ventilation": "무창",
-      "currentBuyer": "카길+도뜰",
-      "costLevel": "규모두당 56,000원",
-      "loan": "현대화 자금 대여금 무이자 5억",
-      "performance": null,
-      "dealProb": 0.4,
-      "dealDate": null,
-      "note": "26년 초 현대화 확정되었으나, 당시 5억원 무이자 대여금 요청하였으나 지급 불가로 거래불발. 금번 명절 인사로 장기접촉 전환.",
-      "buildingDetail": [
-        { "building": "1동", "headcount": "1,000두", "entryDate": "-", "note": "반슬랏·무창" },
-        { "building": "2동", "headcount": "1,200두", "entryDate": "-", "note": "반슬랏·무창(현대화예정)" }
+        {
+          "building": "1동",
+          "headcount": "180~190두",
+          "entryDate": "6/26",
+          "note": null
+        },
+        {
+          "building": "2동",
+          "headcount": "190~200두",
+          "entryDate": "6/26",
+          "note": null
+        },
+        {
+          "building": "3동",
+          "headcount": "210~220두",
+          "entryDate": "8/8",
+          "note": null
+        },
+        {
+          "building": "4동",
+          "headcount": "190두",
+          "entryDate": "8/8",
+          "note": null
+        },
+        {
+          "building": "5동",
+          "headcount": "500두",
+          "entryDate": "9/4(예정)",
+          "note": "보람 입식 예정 · 우레탄·기둥보수 공사완료"
+        },
+        {
+          "building": "6동",
+          "headcount": "180~190두",
+          "entryDate": "6/5",
+          "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차"
+        },
+        {
+          "building": "7동",
+          "headcount": "180~190두",
+          "entryDate": "6/5",
+          "note": "6·7동 가시오랑 우레탄공사 예정 · 출하완료 후 공사 진행, 전입예정 11월 1주차"
+        }
       ]
     },
     {
@@ -770,10 +767,60 @@ const NEW_FARMS = {
       "dealProb": 0,
       "dealDate": null,
       "note": "선진 대여금 30억으로 해결불가로 드랍"
+    },
+    {
+      "manager": "심유선",
+      "region": "충북 청주",
+      "farm": "우송농장",
+      "updatedAt": "2026-11-12",
+      "headcount": 1000,
+      "buildings": null,
+      "floor": "반슬랏",
+      "ventilation": "윈치",
+      "currentBuyer": "선진",
+      "costLevel": "최저사육비,정산제(약 68,000원 추정)",
+      "loan": "보람과 거래 시도중-박충현부장 인계",
+      "performance": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": null
+    },
+    {
+      "manager": "심유선",
+      "region": "충북 옥천",
+      "farm": "향토농장",
+      "updatedAt": "2026-11-12",
+      "headcount": 1200,
+      "buildings": null,
+      "floor": "톱밥",
+      "ventilation": "무창",
+      "currentBuyer": "선진",
+      "costLevel": "최저사육비,정산제(약 79,000원 추정)",
+      "loan": "보람과 거래 시도중-박충현부장 인계",
+      "performance": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "선진한마을 사양성적 1위 농장"
+    },
+    {
+      "manager": "심유선",
+      "region": "경기 안성",
+      "farm": "영석농장",
+      "updatedAt": "2026-11-12",
+      "headcount": 2000,
+      "buildings": null,
+      "floor": "평사",
+      "ventilation": "윈치",
+      "currentBuyer": "개인",
+      "costLevel": "규모두당 58,000원",
+      "loan": null,
+      "performance": null,
+      "dealProb": null,
+      "dealDate": null,
+      "note": "올해 초 폭설로 돈사 리모델링. 내년 5월 재계약시기 시도."
     }
   ]
-}
-;
+};
 
 const WEEKLY_REPORTS = [
   {
